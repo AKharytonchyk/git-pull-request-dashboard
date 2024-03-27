@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { green, red, amber } from "@mui/material/colors";
 import { PullRequest } from "../models/PullRequest";
-import { DesignServices, GitHub, Lock, LockOpen } from "@mui/icons-material";
+import { DesignServices, FileOpen, GitHub, Lock, Visibility } from "@mui/icons-material";
 
 interface PullRequestCardProps {
   pr: PullRequest;
@@ -28,13 +28,22 @@ const PullRequestCard: React.FC<PullRequestCardProps> = ({ pr }) => {
     return red[500];
   };
 
+  
+  const getLabelColor = (label: string) => {
+    if (/(don't|do not)/gi.test(label)) return "warning";
+    if (/(wip|work in progress)/gi.test(label)) return "secondary";
+    if (/(ready for review|Review Neede|Ready For Testing)/gi.test(label)) return "success";
+
+    return "default";
+  }
+
   return (
     <Card>
       <CardActions
         sx={{
           display: "flex",
           justifyContent: "flex-end",
-          gap: 2,
+          gap: 1,
           paddingLeft: 2,
           paddingRight: 2,
         }}
@@ -45,8 +54,9 @@ const PullRequestCard: React.FC<PullRequestCardProps> = ({ pr }) => {
           size="small"
           sx={{ marginRight: "auto" }}
         />
-        {pr.locked ? <Lock /> : <LockOpen />}
+        {pr.locked && <Lock /> }
         {pr.draft && <DesignServices color="secondary"/>}
+        {pr.labels.map((label) => (<Chip key={label.id} label={label.name} size="small" color={getLabelColor(label.name)}/> ))}
         <Chip
           label={pr.state.toUpperCase()}
           color={pr.state === "open" ? "success" : "default"}
@@ -54,15 +64,15 @@ const PullRequestCard: React.FC<PullRequestCardProps> = ({ pr }) => {
           sx={{ marginY: 1 }}
         />
       </CardActions>
-      <CardContent sx={{ display: "flex", flexDirection: "column" }}>
+      <CardContent sx={{ display: "flex", flexDirection: "column" , paddingBottom: 1}}>
         <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
           PR by {pr.user.login}
         </Typography>
         <Typography variant="h5" component="div">
-          {pr.title}
+        <Link href={pr.html_url} target="_blank" rel="noopener">#{pr.number}</Link> {pr.title}
         </Typography>
-        <Box sx={{ display: "flex", gap: 1, alignItems: "baseline", justifyContent: "space-between", paddingTop: 2, marginTop: 'auto' }}>
-          <Typography sx={{ mb: 1.5 }} color="text.secondary">
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center", justifyContent: "space-between", paddingTop: 2, marginTop: 'auto' }}>
+          <Typography color="text.secondary">
             Days in review:{" "}
             <Chip
               label={Math.floor(
@@ -74,9 +84,10 @@ const PullRequestCard: React.FC<PullRequestCardProps> = ({ pr }) => {
             />
           </Typography>
 
-          <Link href={pr.html_url} target="_blank" rel="noopener">
-            View Pull Request
-          </Link>
+          <Box gap={2} display={'flex'}>
+            <Link href={pr.html_url} target="_blank" rel="noopener"><Visibility/></Link>
+            <Link href={pr.html_url + "/files"} target="_blank" rel="noopener"><FileOpen /></Link>
+          </Box>
         </Box>
       </CardContent>
     </Card>

@@ -21,7 +21,7 @@ export interface PullRequest {
   assignees:           any[];
   requested_reviewers: any[];
   requested_teams:     any[];
-  labels:              any[];
+  labels:              Label[];
   milestone:           null;
   draft:               boolean;
   commits_url:         string;
@@ -145,4 +145,14 @@ export interface User {
   received_events_url: string;
   type:                string;
   site_admin:          boolean;
+}
+
+export interface Label {
+  id:          number;
+  node_id:     string;
+  url:         string;
+  name:        string;
+  color:       string;
+  default:     boolean;
+  description: string | null;
 }

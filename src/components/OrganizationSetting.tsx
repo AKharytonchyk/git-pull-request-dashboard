@@ -17,7 +17,6 @@ import { ExpandMore } from "@mui/icons-material";
 import { Repository } from "../models/Repository";
 import { RepositorySelector } from "./RepositorySelector";
 import { ConfigContext } from "../App";
-import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
 
 export type OrganizationSettingProps = {
   org: Organization;
@@ -80,11 +79,12 @@ export const OrganizationSetting: React.FC<OrganizationSettingProps> = ({
           <Input
             placeholder="Filter Repositories"
             fullWidth
+            disabled={isLoading}
             onChange={(e) =>
               onFilterChange(e as React.ChangeEvent<HTMLInputElement>)
             }
           />
-          <ButtonGroup size="small" color="primary" sx={{flexShrink: 0}}>
+          <ButtonGroup size="small" color="primary" sx={{flexShrink: 0}} disabled={isLoading}>
             <Button onClick={() => handleSelectAll()}>Select All</Button>
             <Button onClick={() => handleSelectNone()}>Select None</Button>
           </ButtonGroup>

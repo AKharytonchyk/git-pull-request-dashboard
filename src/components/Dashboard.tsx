@@ -4,6 +4,7 @@ import { PullRequest } from "../models/PullRequest";
 import PullRequestCard from "./PullRequestCard";
 import { Box, Input } from "@mui/material";
 import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
+import LandingPage from "./LandingPage";
 
 export type DashboardProps = {};
 
@@ -38,7 +39,8 @@ export const Dashboard: React.FC<DashboardProps> = () => {
 
   return (
     <Box padding={2} width={"calc(100vw - 2em)"}>
-      <Input placeholder="Filter" onChange={onFilterChange} sx={{ marginLeft: 'auto' }} />
+      <Input placeholder="Filter" onChange={onFilterChange} sx={{ marginLeft: 'auto', position: 'fixed', top: "1em" }} color="primary"/>
+      {pulls.length === 0 && <LandingPage auth/>}
       <Grid2 container spacing={2}>
         {pulls.filter(pull => pull.user.login.includes(filter) || pull.head.repo.full_name.includes(filter)).map((pull) => (
           <Grid2 key={pull.id} xl={6} xs={12}>

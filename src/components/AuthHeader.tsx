@@ -1,4 +1,4 @@
-import { Settings } from "@mui/icons-material";
+import { Help, Settings } from "@mui/icons-material";
 import { Box, Avatar, Chip, Button } from "@mui/material";
 
 export type AuthHeaderProps = {
@@ -30,9 +30,17 @@ export const AuthHeader: React.FC<AuthHeaderProps> = ({user, logOut, setOpenSett
       <Button
         variant="text"
         color="inherit"
+        size="small"
         onClick={() => setOpenSettings(true)}
       >
         <Settings />
+      </Button>
+      <Button
+        variant="text"
+        color="inherit"
+        size="small"
+        >
+          <Help />
       </Button>
       <Button variant="text" color="inherit" onClick={() => logOut()}>
         Log Out

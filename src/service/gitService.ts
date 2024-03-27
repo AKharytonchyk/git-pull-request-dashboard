@@ -29,7 +29,8 @@ export class GitService {
     return this.octokit.orgs.listForAuthenticatedUser();
   }
 
-  getRepos(owner: string) {
-    return this.octokit.paginate(this.octokit.repos.listForOrg, {org: owner, per_page: 100, timeout: 5000});
+  async getRepos(owner: string) {
+    const repos = await this.octokit.paginate(this.octokit.repos.listForOrg, {org: owner, per_page: 100, timeout: 5000});
+    return repos.filter((repo) => !repo.archived);
   }
 }

@@ -6,6 +6,7 @@ import { SettingsDrawer } from "./SettingsDrawer";
 import { Dashboard } from "./components/Dashboard";
 import { AuthHeader } from "./components/AuthHeader";
 import { UnAuthHeader } from "./components/UnAuthHeader";
+import LandingPage from "./components/LandingPage";
 
 export const ConfigContext = React.createContext<{
   octokit: GitService | null;
@@ -26,7 +27,7 @@ function App() {
   const onLogin = React.useCallback(() => {
     if (token) {
       const octoKit = new GitService(
-        process.env.REACT_APP_GITHUB_API_URL || "https://api.github.com/api/v3",
+        process.env.REACT_APP_GITHUB_API_URL || "https://ghe.coxautoinc.com/api/v3",
         token
       );
       octoKit.testAuthentication().then((user) => {
@@ -117,6 +118,7 @@ function App() {
           }}
         >
           {octokit && <Dashboard />}
+          {(!octokit) && <LandingPage />}
           <Box
             component={"section"}
             sx={{
