@@ -7,6 +7,7 @@ import {
   Link,
   CardActions,
   Box,
+  Tooltip,
 } from "@mui/material";
 import { green, red, amber } from "@mui/material/colors";
 import { PullRequest } from "../models/PullRequest";
@@ -85,8 +86,8 @@ const PullRequestCard: React.FC<PullRequestCardProps> = ({ pr }) => {
           </Typography>
 
           <Box gap={2} display={'flex'}>
-            <Link href={pr.html_url} target="_blank" rel="noopener"><Visibility/></Link>
-            <Link href={pr.html_url + "/files"} target="_blank" rel="noopener"><FileOpen /></Link>
+            <Link href={pr.html_url} target="_blank" rel="noopener"><Tooltip title="View/Open PR"><Visibility/></Tooltip></Link>
+            <Link href={pr.html_url + "/files"} target="_blank" rel="noopener"><Tooltip title="View Changes"><FileOpen /></Tooltip></Link>
           </Box>
         </Box>
       </CardContent>

@@ -2,9 +2,11 @@ import React from "react";
 import { ConfigContext } from "../App";
 import { PullRequest } from "../models/PullRequest";
 import PullRequestCard from "./PullRequestCard";
-import { Box, Input } from "@mui/material";
+import { Box } from "@mui/material";
 import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
 import LandingPage from "./LandingPage";
+import { MultiselectFilter } from "./MultiselectFilter";
+import { InputFilter } from "./InputFilter";
 
 export type DashboardProps = {};
 
@@ -24,7 +26,13 @@ export const Dashboard: React.FC<DashboardProps> = () => {
           activeRepositories.flatMap((repo) => octokit.getPullRequests(repo))
         );
 
-        setPulls(pulls.flat().sort((a, b) => a.base.repo.full_name.localeCompare(b.base.repo.full_name)) as any[]);
+        setPulls(
+          pulls
+            .flat()
+            .sort((a, b) =>
+              a.base.repo.full_name.localeCompare(b.base.repo.full_name)
+            ) as any[]
+        );
       };
 
       getPulls();
@@ -32,17 +40,64 @@ export const Dashboard: React.FC<DashboardProps> = () => {
   }, [octokit, activeRepositories]);
 
   const [filter, setFilter] = React.useState<string>("");
-  const onFilterChange = React.useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => setFilter(event.target.value),
-    []
+  const [includeLabels, setIncludeLabels] = React.useState<string[]>([]);
+  const [excludeLabels, setExcludeLabels] = React.useState<string[]>([]);
+  const labels: string[] = React.useMemo(
+    () =>
+      Array.from(
+        new Set(pulls.map((pull) => pull.labels.map(({ name }) => name)).flat())
+      ),
+    [pulls]
   );
+
+  const filteredPulls = React.useMemo(() => {
+    return pulls.filter((pull) => {
+      if (
+        includeLabels.length > 0 &&
+        !pull.labels.some(({ name }) => includeLabels.includes(name))
+      )
+        return false;
+      if (
+        excludeLabels.length > 0 &&
+        pull.labels.some(({ name }) => excludeLabels.includes(name))
+      )
+        return false;
+      if (
+        filter.length > 0 &&
+        !pull.user.login
+          .toLocaleLowerCase()
+          .includes(filter.toLocaleLowerCase()) &&
+        !pull.head.repo.full_name
+          .toLocaleLowerCase()
+          .includes(filter.toLocaleLowerCase())
+      )
+        return false;
+
+      return true;
+    });
+  }, [pulls, filter, includeLabels, excludeLabels]);
 
   return (
     <Box padding={2} width={"calc(100vw - 2em)"}>
-      <Input placeholder="Filter" onChange={onFilterChange} sx={{ marginLeft: 'auto', position: 'fixed', top: "1em" }} color="primary"/>
-      {pulls.length === 0 && <LandingPage auth/>}
+      {pulls.length === 0 ? (
+        <LandingPage auth />
+      ) : (
+        <Box>
+          <InputFilter name="Filter" onChange={setFilter} size="small" />
+          <MultiselectFilter
+            options={labels.filter((label) => !excludeLabels.includes(label))}
+            name="Include labels"
+            onChange={setIncludeLabels}
+          />
+          <MultiselectFilter
+            options={labels.filter((label) => !includeLabels.includes(label))}
+            name="Exclude labels"
+            onChange={setExcludeLabels}
+          />
+        </Box>
+      )}
       <Grid2 container spacing={2}>
-        {pulls.filter(pull => pull.user.login.includes(filter) || pull.head.repo.full_name.includes(filter)).map((pull) => (
+        {filteredPulls.map((pull) => (
           <Grid2 key={pull.id} xl={6} xs={12}>
             <PullRequestCard pr={pull} />
           </Grid2>

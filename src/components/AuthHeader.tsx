@@ -1,5 +1,5 @@
-import { Help, Settings } from "@mui/icons-material";
-import { Box, Avatar, Chip, Button } from "@mui/material";
+import { Settings } from "@mui/icons-material";
+import { Box, Avatar, Chip, Button, Tooltip } from "@mui/material";
 
 export type AuthHeaderProps = {
   user: {
@@ -11,7 +11,11 @@ export type AuthHeaderProps = {
   setOpenSettings: (value: boolean) => void;
 };
 
-export const AuthHeader: React.FC<AuthHeaderProps> = ({user, logOut, setOpenSettings}) => {
+export const AuthHeader: React.FC<AuthHeaderProps> = ({
+  user,
+  logOut,
+  setOpenSettings,
+}) => {
   return (
     <Box
       sx={{
@@ -33,17 +37,13 @@ export const AuthHeader: React.FC<AuthHeaderProps> = ({user, logOut, setOpenSett
         size="small"
         onClick={() => setOpenSettings(true)}
       >
-        <Settings />
-      </Button>
-      <Button
-        variant="text"
-        color="inherit"
-        size="small"
-        >
-          <Help />
+        <Tooltip title="Settings">
+          <Settings />
+        </Tooltip>
       </Button>
       <Button variant="text" color="inherit" onClick={() => logOut()}>
         Log Out
       </Button>
     </Box>
-  )};
+  );
+};
