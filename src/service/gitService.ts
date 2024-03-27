@@ -30,6 +30,6 @@ export class GitService {
   }
 
   getRepos(owner: string) {
-    return this.octokit.repos.listForOrg({org: owner});
+    return this.octokit.paginate(this.octokit.repos.listForOrg, {org: owner, per_page: 100, timeout: 5000});
   }
 }

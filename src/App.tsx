@@ -26,7 +26,7 @@ function App() {
   const onLogin = React.useCallback(() => {
     if (token) {
       const octoKit = new GitService(
-        "https://ghe.coxautoinc.com/api/v3",
+        process.env.REACT_APP_GITHUB_API_URL || "https://api.github.com/api/v3",
         token
       );
       octoKit.testAuthentication().then((user) => {
