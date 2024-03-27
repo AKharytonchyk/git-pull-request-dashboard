@@ -1,18 +1,17 @@
 import React from "react";
 import "./App.css";
 import { GitService } from "./service/gitService";
-import {
-  AppBar,
-  Avatar,
-  Box,
-  Button,
-  Chip,
-  TextField,
-  Toolbar,
-} from "@mui/material";
-import { AccountCircle, Settings } from "@mui/icons-material";
-import { Organization } from "./models/Organization";
+import { AppBar, Box, Toolbar } from "@mui/material";
 import { SettingsDrawer } from "./SettingsDrawer";
+import { Dashboard } from "./components/Dashboard";
+import { AuthHeader } from "./components/AuthHeader";
+import { UnAuthHeader } from "./components/UnAuthHeader";
+
+export const ConfigContext = React.createContext<{
+  octokit: GitService | null;
+  repositorySettings: Record<string, boolean>;
+  handleRepositorySelect: (repository: string, selected: boolean) => void;
+}>({ octokit: null, repositorySettings: {}, handleRepositorySelect: () => {} });
 
 function App() {
   const [user, setUser] = React.useState<{
@@ -22,7 +21,6 @@ function App() {
   }>();
   const [token, setToken] = React.useState<string>();
   const [octokit, setOctokit] = React.useState<GitService | null>(null);
-  const [orgs, setOrgs] = React.useState<Organization[]>([]);
   const [openSettings, setOpenSettings] = React.useState<boolean>(false);
 
   const onLogin = React.useCallback(() => {
@@ -60,14 +58,6 @@ function App() {
     }
   }, []);
 
-  const getPulls = React.useCallback(() => {
-    if (octokit) {
-      octokit.getPulls("coxautoinc", "test").then((pulls) => {
-        console.log(pulls);
-      });
-    }
-  }, [octokit]);
-
   const logOut = React.useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -75,99 +65,74 @@ function App() {
     setOctokit(null);
   }, []);
 
-  const UnAuthHeader = () => (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "row",
-        gap: 2,
-        alignItems: "flex-end",
-        justifyContent: "end",
-      }}
-    >
-      <AccountCircle sx={{ mr: 2 }} />
-      <TextField
-        size="small"
-        sx={{ width: "400px" }}
-        label="Token"
-        variant="standard"
-        onChange={(e) => setToken(e.target.value)}
-      />
-      <Button variant="text" color="inherit" onClick={() => onLogin()}>
-        Log In
-      </Button>
-    </Box>
+  const [repositorySettings, setRepositorySettings] = React.useState<
+    Record<string, boolean>
+  >({});
+  const handleRepositorySelect = React.useCallback(
+    (repository: string, selected: boolean) => {
+      setRepositorySettings((prev) => {
+        const newState = { ...prev, [repository]: selected };
+        localStorage.setItem("REPOSITORY_CONFIG", JSON.stringify(newState));
+
+        return newState;
+      });
+    },
+    []
   );
 
-  const AuthHeader = () => (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "row",
-        gap: 2,
-        alignItems: "center",
-        justifyContent: "end",
-      }}
-    >
-      <Avatar alt={user?.login} src={user?.avatar_url} sx={{ mr: 2 }} />
-      <Chip
-        label={user?.login}
-        onClick={() => window.open(user?.url, "_blank")}
-      />
-      <Button
-        variant="text"
-        color="inherit"
-        onClick={() => setOpenSettings(true)}
-      >
-        <Settings />
-      </Button>
-      <Button variant="text" color="inherit" onClick={() => logOut()}>
-        Log Out
-      </Button>
-    </Box>
-  );
+  React.useEffect(() => {
+    const repositoryConfig = JSON.parse(
+      localStorage.getItem("REPOSITORY_CONFIG") ?? "{}"
+    );
+    setRepositorySettings(repositoryConfig);
+  }, []);
 
   return (
     <>
-      <AppBar position="static" color="default">
-        <Toolbar sx={{ justifyContent: "flex-end" }}>
-          {!user?.login ? <UnAuthHeader /> : <AuthHeader />}
-        </Toolbar>
-      </AppBar>
-      <Box
-        component={"main"}
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 2,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
+      <ConfigContext.Provider
+        value={{ octokit, repositorySettings, handleRepositorySelect }}
       >
+        <AppBar position="static" color="default" sx={{ position: "fixed" }}>
+          <Toolbar sx={{ justifyContent: "flex-end" }}>
+            {!user?.login ? (
+              <UnAuthHeader setToken={setToken} onLogin={onLogin} />
+            ) : (
+              <AuthHeader
+                user={user}
+                logOut={logOut}
+                setOpenSettings={setOpenSettings}
+              />
+            )}
+          </Toolbar>
+        </AppBar>
         <Box
-          component={"section"}
+          component={"main"}
           sx={{
             display: "flex",
             flexDirection: "column",
+            gap: 2,
+            justifyContent: "center",
             alignItems: "center",
+            paddingTop: "4em",
           }}
         >
-          <h1>DEBUG</h1>
+          {octokit && <Dashboard />}
+          <Box
+            component={"section"}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          ></Box>
         </Box>
-        <Box
-          component={"section"}
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        ></Box>
-      </Box>
-      {octokit && <SettingsDrawer
-        opened={openSettings}
-        octokit={octokit}
-        onClose={() => setOpenSettings(false)}
-      />}
+        {octokit && (
+          <SettingsDrawer
+            opened={openSettings}
+            onClose={() => setOpenSettings(false)}
+          />
+        )}
+      </ConfigContext.Provider>
     </>
   );
 }

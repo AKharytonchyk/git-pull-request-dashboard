@@ -11,7 +11,14 @@ export class GitService {
   }
 
   getPulls(owner: string, repo: string) {
-    return this.octokit.pulls.list({owner, repo});
+    return this.octokit.pulls.list({owner, repo, state: "open"});
+  }
+
+  async getPullRequests(repo: string) {
+    const [owner, name] = repo.split("/");
+    const response = this.getPulls(owner, name);
+
+    return (await response).data;
   }
 
   testAuthentication() {
