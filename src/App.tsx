@@ -53,7 +53,7 @@ function App() {
     if (localStorage.getItem("token")) {
       setOctokit(
         new GitService(
-          "https://ghe.coxautoinc.com/api/v3",
+          process.env.REACT_APP_GITHUB_API_URL || "https://api.github.com/",
           localStorage.getItem("token") || ""
         )
       );
