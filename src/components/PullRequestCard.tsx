@@ -58,7 +58,7 @@ const PullRequestCard: React.FC<PullRequestCardProps> = ({ pr }) => {
           sx={{ marginRight: "auto" }}
         />
         {pr.locked && <Lock /> }
-        {pr.draft && <DesignServices color="secondary"/>}
+        {pr.draft && <Tooltip title="Draft PR"><DesignServices color="secondary"/></Tooltip>}
         {pr.labels.map((label) => (<Chip key={label.id} label={label.name} size="small" color={getLabelColor(label.name)}/> ))}
         <Chip
           label={pr.state.toUpperCase()}

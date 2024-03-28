@@ -1,7 +1,7 @@
 import React from "react";
 import { ConfigContext } from "../App";
 import { Approvals } from "../models/Approvals";
-import { Avatar, Badge, Box } from '@mui/material';
+import { Avatar, Badge, Box, Tooltip } from '@mui/material';
 
 export type PullRequestsApprovalsProps = {
   owner: string;
@@ -45,9 +45,11 @@ export const PullRequestsApprovals: React.FC<PullRequestsApprovalsProps> = ({
   const allApprovals = React.useMemo(() => approvals?.filter((approval) => approval.state !== "DISMISSED"), [approvals]);
 
   const approvalAvatars = React.useMemo(() => allApprovals?.map((approval) => (
-    <Badge key={approval.user.login} {...getBadgeProps(approval.state)} sx={{ height: "1em", display: "flex", alignItems: "center" }}>
-      <Avatar key={approval.user.login} alt={approval.user.login} src={approval.user.avatar_url} sx={{height: "1.5em", width: "1.5em"}} />
-    </Badge>
+    <Tooltip key={approval.user.login} title={approval.state}>
+      <Badge {...getBadgeProps(approval.state)} sx={{ height: "1em", display: "flex", alignItems: "center" }}>
+        <Avatar alt={approval.user.login} src={approval.user.avatar_url} sx={{height: "1.5em", width: "1.5em"}} />
+      </Badge>
+    </Tooltip>
     )), [allApprovals]);
 
   return <>

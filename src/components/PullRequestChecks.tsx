@@ -1,7 +1,7 @@
 import React from "react";
 import { ConfigContext } from "../App";
 import { CheckRun } from "../models/CheckRun";
-import { Box, Dialog, Link, Typography } from "@mui/material";
+import { Box, Dialog, Link, Tooltip, Typography } from "@mui/material";
 import { CheckCircle, Error, ErrorOutline } from "@mui/icons-material";
 
 export type PullRequestChecksProps = {
@@ -44,9 +44,9 @@ export const PullRequestChecks: React.FC<PullRequestChecksProps> = ({
       >
         Checks:{" "}
         {allChecksPassed ? (
-          <CheckCircle color="success" sx={{display: "flex", alignItems: "center"}} />
+          <Tooltip title="All checks passed"><CheckCircle color="success" sx={{display: "flex", alignItems: "center"}} /></Tooltip>
         ) : (
-          <Error color="error" />
+          <Tooltip title="Something went wrong. Click for details"><Error color="error" /></Tooltip>
         )}
       </Typography>
       <Dialog open={open} onClose={() => setOpen(false)} sx={{ padding: "2em" }}>

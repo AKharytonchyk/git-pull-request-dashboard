@@ -23,6 +23,10 @@ The GitHub PR Dashboard is a comprehensive tool designed to streamline the monit
 
 ![Settings](docs/images/settings.jpeg)
 
+### Failed Checks
+
+![Failed Checks](docs/images/failed-checks.jpeg)
+
 ## Getting Started
 
 Follow these instructions to get your GitHub PR Dashboard up and running on your local machine for development and testing purposes.
