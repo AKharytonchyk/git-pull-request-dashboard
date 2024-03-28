@@ -31,6 +31,9 @@ jobs:
         run: |
           npm ci
           npm run build
+        env:
+          CI: true
+          REACT_APP_GITHUB_API_URL: "https://api.github.com"
       - name: Update HTML Links
         run: |
           sed -i 's|href="/|href="|g' build/index.html
