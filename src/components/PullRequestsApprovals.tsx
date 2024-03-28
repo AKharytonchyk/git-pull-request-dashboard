@@ -52,7 +52,7 @@ export const PullRequestsApprovals: React.FC<PullRequestsApprovalsProps> = ({
 
   return <>
     <Box color="text.secondary" sx={{display: "flex", gap: 1, alignItems: "center", marginRight: "auto" }}>
-      Approvals: <Box sx={{ display: "flex", alignItems: "center" }}> {approvals.length ? approvalAvatars : "Not reviews"} </Box>
+      Approvals: <Box sx={{ display: "flex", alignItems: "center" }}> {approvals.length ? approvalAvatars : "No reviews"} </Box>
     </Box>
   </>;
 }
