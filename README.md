@@ -3,11 +3,25 @@
 
 The GitHub PR Dashboard is a comprehensive tool designed to streamline the monitoring of pull requests across multiple repositories within the GitHub platform. Ideal for developers and teams managing multiple projects, it offers a unified view of PRs, facilitating better tracking and management.
 
+## Demo Page
+
+[Go to demo -->](https://akharytonchyk.github.io/git-pull-request-dashboard/)
+
 ## Features
 
 - **Connect with GitHub**: Securely connect using GitHub Personal Access Tokens (PAT).
 - **Organization and Repository Selection**: Choose which organizations and repositories you want to monitor within the dashboard.
 - **Pull Request Overview**: Get a consolidated view of all pull requests across your selected repositories.
+
+## UI Example
+
+### PR Dashboard
+
+![Dashboard](docs/images/dashboard.jpeg)
+
+### Settings Overview
+
+![Settings](docs/images/settings.jpeg)
 
 ## Getting Started
 

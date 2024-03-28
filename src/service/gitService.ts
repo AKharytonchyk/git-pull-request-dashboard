@@ -41,4 +41,12 @@ export class GitService {
   async getUserRepos() {
     return this.octokit.paginate(this.octokit.repos.listForAuthenticatedUser, {per_page: 100, timeout: 5000, type: "owner"});
   }
+
+  async getPRChecksStatus(owner: string, repo: string, prNumber: number) {
+    return this.octokit.checks.listForRef({owner, repo, ref: `pull/${prNumber}/head`, filter: "latest"});
+  }
+
+  async getPRApprovals(owner: string, repo: string, prNumber: number) {
+    return this.octokit.pulls.listReviews({owner, repo, pull_number: prNumber});
+  }
 }
