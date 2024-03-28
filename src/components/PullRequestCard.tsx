@@ -14,6 +14,7 @@ import { PullRequest } from "../models/PullRequest";
 import { DesignServices, FileOpen, GitHub, Lock, Visibility } from "@mui/icons-material";
 import { PullRequestChecks } from "./PullRequestChecks";
 import { PullRequestsApprovals } from "./PullRequestsApprovals";
+import { PullRequestMergeCheck } from "./PullRequestMergeCheck";
 
 interface PullRequestCardProps {
   pr: PullRequest;
@@ -41,7 +42,7 @@ const PullRequestCard: React.FC<PullRequestCardProps> = ({ pr }) => {
   }
 
   return (
-    <Card>
+    <Card sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <CardActions
         sx={{
           display: "flex",
@@ -57,7 +58,7 @@ const PullRequestCard: React.FC<PullRequestCardProps> = ({ pr }) => {
           size="small"
           sx={{ marginRight: "auto" }}
         />
-        {pr.locked && <Lock /> }
+        {pr.locked && <Lock /> } 
         {pr.draft && <Tooltip title="Draft PR"><DesignServices color="secondary"/></Tooltip>}
         {pr.labels.map((label) => (<Chip key={label.id} label={label.name} size="small" color={getLabelColor(label.name)}/> ))}
         <Chip
@@ -67,7 +68,7 @@ const PullRequestCard: React.FC<PullRequestCardProps> = ({ pr }) => {
           sx={{ marginY: 1 }}
         />
       </CardActions>
-      <CardContent sx={{ display: "flex", flexDirection: "column" , paddingBottom: 1}}>
+      <CardContent sx={{ display: "flex", flexDirection: "column" , paddingBottom: 1, height: "100%" }}>
         <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
           PR by {pr.user.login}
         </Typography>
@@ -88,6 +89,8 @@ const PullRequestCard: React.FC<PullRequestCardProps> = ({ pr }) => {
           </Box>
           {"|"}
           <PullRequestChecks owner = {pr.base.repo.owner.login} repo = {pr.base.repo.name} prNumber = {pr.number}/>
+          {"|"}
+          <PullRequestMergeCheck owner={pr.base.repo.owner.login} repo={pr.base.repo.name} prNumber={pr.number} />
           {"|"}
           <PullRequestsApprovals owner = {pr.base.repo.owner.login} repo = {pr.base.repo.name} prNumber = {pr.number}/>
           <Box gap={2} display={'flex'}>

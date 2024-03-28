@@ -3,6 +3,7 @@ import { ConfigContext } from "../App";
 import { CheckRun } from "../models/CheckRun";
 import { Box, Dialog, Link, Tooltip, Typography } from "@mui/material";
 import { CheckCircle, Error, ErrorOutline } from "@mui/icons-material";
+import { useOnScreen } from "../hooks/useOnScreen";
 
 export type PullRequestChecksProps = {
   owner: string;
@@ -18,9 +19,11 @@ export const PullRequestChecks: React.FC<PullRequestChecksProps> = ({
   const { octokit } = React.useContext(ConfigContext);
   const [checks, setChecks] = React.useState<CheckRun[]>();
   const [open, setOpen] = React.useState(false);
+  const elementRef = React.useRef<HTMLDivElement>(null);
+  const isIntersecting = useOnScreen(elementRef, "100px", true);
 
   React.useEffect(() => {
-    if (!octokit) return;
+    if (!octokit || !isIntersecting) return;    
     octokit
       .getPRChecksStatus(owner, repo, prNumber)
       .then((response) => setChecks(response.data.check_runs));
@@ -28,7 +31,7 @@ export const PullRequestChecks: React.FC<PullRequestChecksProps> = ({
     return () => {
       setChecks(undefined);
     };
-  }, [octokit, owner, repo, prNumber]);
+  }, [octokit, owner, repo, prNumber, isIntersecting]);
 
   const allChecksPassed = React.useMemo(
     () => checks?.every((check) => check.conclusion === "success"),
@@ -38,6 +41,7 @@ export const PullRequestChecks: React.FC<PullRequestChecksProps> = ({
   return (
     <>
       <Typography
+        ref={elementRef}
         color="text.secondary"
         onClick={() => !allChecksPassed && setOpen(true)}
         sx={{ display: "flex", gap: 1, alignItems: "center", cursor: allChecksPassed ? "default" : "pointer" }}

@@ -2,6 +2,7 @@ import React from "react";
 import { ConfigContext } from "../App";
 import { Approvals } from "../models/Approvals";
 import { Avatar, Badge, Box, Tooltip } from '@mui/material';
+import { useOnScreen } from "../hooks/useOnScreen";
 
 export type PullRequestsApprovalsProps = {
   owner: string;
@@ -16,9 +17,11 @@ export const PullRequestsApprovals: React.FC<PullRequestsApprovalsProps> = ({
 }) => {
   const { octokit } = React.useContext(ConfigContext);
   const [ approvals, setApprovals] = React.useState<Approvals[]>([]);
+  const elementRef = React.useRef<HTMLDivElement>(null);
+  const isIntersecting = useOnScreen(elementRef, "100px", true);
 
   React.useEffect(() => {
-    if (!octokit) return;
+    if (!octokit || !isIntersecting) return;
     octokit
       .getPRApprovals(owner, repo, prNumber)
       .then((response) => setApprovals(response as Approvals[]));
@@ -26,7 +29,7 @@ export const PullRequestsApprovals: React.FC<PullRequestsApprovalsProps> = ({
     return () => {
       setApprovals([]);
     };
-  }, [octokit, owner, repo, prNumber]);
+  }, [octokit, owner, repo, prNumber, isIntersecting]);
 
   const getBadgeProps = (state: string):  {badgeContent: string, color: "success" | "error" | "warning" | "info"}  => {
     switch (state) {
@@ -53,7 +56,7 @@ export const PullRequestsApprovals: React.FC<PullRequestsApprovalsProps> = ({
     )), [allApprovals]);
 
   return <>
-    <Box color="text.secondary" sx={{display: "flex", gap: 1, alignItems: "center", marginRight: "auto" }}>
+    <Box ref={elementRef} color="text.secondary" sx={{display: "flex", gap: 1, alignItems: "center", marginRight: "auto" }}>
       Approvals: <Box sx={{ display: "flex", alignItems: "center" }}> {approvals.length ? approvalAvatars : "No reviews"} </Box>
     </Box>
   </>;
