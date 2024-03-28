@@ -33,4 +33,12 @@ export class GitService {
     const repos = await this.octokit.paginate(this.octokit.repos.listForOrg, {org: owner, per_page: 100, timeout: 5000});
     return repos.filter((repo) => !repo.archived);
   }
+
+  async getStaredRepos() {
+    return this.octokit.paginate(this.octokit.activity.listReposStarredByAuthenticatedUser, {per_page: 100, timeout: 5000});
+  }
+
+  async getUserRepos() {
+    return this.octokit.paginate(this.octokit.repos.listForAuthenticatedUser, {per_page: 100, timeout: 5000, type: "owner"});
+  }
 }

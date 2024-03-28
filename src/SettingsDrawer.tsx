@@ -1,8 +1,8 @@
 import { Drawer, List, Typography } from "@mui/material";
 import React from "react";
-import { OrganizationSetting } from "./components/OrganizationSetting";
 import { Organization } from "./models/Organization";
 import { ConfigContext } from "./App";
+import { RepoSettingAccordion } from "./components/RepoSettingAccordion";
 
 export type SettingsDrawerProps = {
   opened: boolean;
@@ -21,7 +21,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
   }, [octokit]);
 
   const orgList = React.useMemo(() => orgs.map((org) => (
-    <OrganizationSetting key={org.id} org={org} />
+    <RepoSettingAccordion key={org.id} org={org} type="org" />
   )), [orgs]);
 
   return (
@@ -30,6 +30,8 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
         Organizations: 
       </Typography>
       <List sx={{ mr: 2, gap: 2 }}>
+        <RepoSettingAccordion type="user" />
+        <RepoSettingAccordion type="starred" />
         {orgList}
       </List>
     </Drawer>
