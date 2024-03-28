@@ -8,7 +8,6 @@ import {
   MenuItem,
   SelectChangeEvent,
 } from "@mui/material";
-import { on } from "events";
 import React from "react";
 
 const ITEM_HEIGHT = 48;

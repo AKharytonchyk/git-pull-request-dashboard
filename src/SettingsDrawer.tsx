@@ -1,5 +1,4 @@
-import { Refresh } from "@mui/icons-material";
-import { Drawer, Button, List, Typography } from "@mui/material";
+import { Drawer, List, Typography } from "@mui/material";
 import React from "react";
 import { OrganizationSetting } from "./components/OrganizationSetting";
 import { Organization } from "./models/Organization";
