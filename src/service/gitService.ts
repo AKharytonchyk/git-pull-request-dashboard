@@ -31,7 +31,7 @@ export class GitService {
 
   async getRepos(owner: string) {
     const repos = await this.octokit.paginate(this.octokit.repos.listForOrg, {org: owner, per_page: 100, timeout: 5000});
-    return repos.filter((repo) => !repo.archived);
+    return repos.filter((repo) => !repo.archived).sort((a, b) => a.name.localeCompare(b.name));
   }
 
   async getStaredRepos() {

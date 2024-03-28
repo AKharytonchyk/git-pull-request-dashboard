@@ -1,7 +1,7 @@
 import React from "react";
 import { ConfigContext } from "../App";
 import { CheckRun } from "../models/CheckRun";
-import { Box, Dialog, Link, Modal, Typography } from "@mui/material";
+import { Box, Dialog, Link, Typography } from "@mui/material";
 import { CheckCircle, Error, ErrorOutline } from "@mui/icons-material";
 
 export type PullRequestChecksProps = {

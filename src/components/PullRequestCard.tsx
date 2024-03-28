@@ -12,7 +12,6 @@ import {
 import { green, red, amber } from "@mui/material/colors";
 import { PullRequest } from "../models/PullRequest";
 import { DesignServices, FileOpen, GitHub, Lock, Visibility } from "@mui/icons-material";
-import { ConfigContext } from "../App";
 import { PullRequestChecks } from "./PullRequestChecks";
 import { PullRequestsApprovals } from "./PullRequestsApprovals";
 
@@ -21,22 +20,6 @@ interface PullRequestCardProps {
 }
 
 const PullRequestCard: React.FC<PullRequestCardProps> = ({ pr }) => {
-  const { octokit } = React.useContext(ConfigContext);
-  const [checkStatus, setCheckStatus] = React.useState<string>("pending");
-  const [aoorovals, setApprovals] = React.useState<number>(0);
-
-  React.useEffect(() => {
-    if (!octokit) return;
-
-    octokit.getPRChecksStatus(pr.base.repo.owner.login, pr.base.repo.name, pr.number).then((status) => {
-      console.log(`getPRChecksStatus: ${pr.number} ${pr.base.repo.name}`, status.data);
-    });
-
-    octokit.getPRApprovals(pr.base.repo.owner.login, pr.base.repo.name, pr.number).then((approvals) => {
-      console.log('getPRApprovals', approvals.data);
-    });
-  }, [pr, octokit]);
-
   const getColorForDaysInReview = (createdAt: Date) => {
     const today = new Date();
     const daysInReview = Math.floor(
@@ -92,8 +75,8 @@ const PullRequestCard: React.FC<PullRequestCardProps> = ({ pr }) => {
         <Link href={pr.html_url} target="_blank" rel="noopener">#{pr.number}</Link> {pr.title}
         </Typography>
         <Box sx={{ display: "flex", gap: 1, alignItems: "center", justifyContent: "space-between", paddingTop: 2, marginTop: 'auto' }}>
-          <Typography color="text.secondary">
-            Days in review:{" "}
+          <Box sx={{ display: "flex", alignItems: "center", flexDirection: "row", gap: 1}}>
+            <Typography color="text.secondary">Days in review:{" "}</Typography>
             <Chip
               label={Math.floor(
                 (new Date().getTime() - new Date(pr.created_at).getTime()) /
@@ -102,7 +85,7 @@ const PullRequestCard: React.FC<PullRequestCardProps> = ({ pr }) => {
               sx={{ bgcolor: getColorForDaysInReview(pr.created_at) }}
               size="small"
             />
-          </Typography>
+          </Box>
           {"|"}
           <PullRequestChecks owner = {pr.base.repo.owner.login} repo = {pr.base.repo.name} prNumber = {pr.number}/>
           {"|"}

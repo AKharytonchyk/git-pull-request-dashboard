@@ -25,7 +25,7 @@ export type RepoSettingAccordionProps = {
 };
 
 export const RepoSettingAccordion: React.FC<RepoSettingAccordionProps> = ({org, type}) => {
-  const { octokit, handleRepositorySelect } = React.useContext(ConfigContext);
+  const { octokit, handleRepositorySelect, repositorySettings } = React.useContext(ConfigContext);
   const [isLoading, setIsLoading] = React.useState(false);
   const [repos, setRepos] = React.useState<Repository[]>([]);
   const [selectedRepos, setSelectedRepos] = React.useState<Repository[]>([]);
@@ -57,10 +57,19 @@ export const RepoSettingAccordion: React.FC<RepoSettingAccordionProps> = ({org, 
 
   const repoList = useMemo(
     () =>
-      selectedRepos.map((repo) => (
+      selectedRepos
+      .sort((a, b) => {
+        const repoAHasSettingsTrue = repositorySettings[a.full_name] === true ? 0 : 1;
+        const repoBHasSettingsTrue = repositorySettings[b.full_name] === true ? 0 : 1;
+        if (repoAHasSettingsTrue !== repoBHasSettingsTrue) {
+          return repoAHasSettingsTrue - repoBHasSettingsTrue;
+        }
+        return a.full_name.localeCompare(b.full_name);
+      })
+      .map((repo) => (
         <RepositorySelector key={repo.id} repository={repo} />
       )),
-    [selectedRepos]
+    [selectedRepos, repositorySettings]
   );
 
   const handleSelectAll = React.useCallback(() => {
@@ -80,8 +89,6 @@ export const RepoSettingAccordion: React.FC<RepoSettingAccordionProps> = ({org, 
     },
     [repos]
   );
-
-  
 
   const title = React.useMemo(() => {
     switch (type) {
