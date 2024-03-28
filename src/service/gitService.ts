@@ -47,6 +47,13 @@ export class GitService {
   }
 
   async getPRApprovals(owner: string, repo: string, prNumber: number) {
-    return this.octokit.pulls.listReviews({owner, repo, pull_number: prNumber});
+    const reviews = await this.octokit.pulls.listReviews({owner, repo, pull_number: prNumber});
+
+    return reviews.data.reduce((acc: any, review: any) => {
+      if (!acc[review.user.login] || new Date(acc[review.user.login].submitted_at) < new Date(review.submitted_at)) {
+        acc[review.user.login] = review;
+      }
+      return acc;
+    }, {} as Record<string, any>).values();
   }
 }

@@ -21,7 +21,7 @@ export const PullRequestsApprovals: React.FC<PullRequestsApprovalsProps> = ({
     if (!octokit) return;
     octokit
       .getPRApprovals(owner, repo, prNumber)
-      .then((response) => setApprovals(response.data as Approvals[]));
+      .then((response) => setApprovals(response as Approvals[]));
 
     return () => {
       setApprovals([]);
