@@ -29,6 +29,7 @@ jobs:
           node-version: '20'
       - name: Build
         run: |
+          export REACT_APP_GITHUB_API_URL=$REACT_APP_GITHUB_API_URL
           npm ci
           npm run build
         env:
