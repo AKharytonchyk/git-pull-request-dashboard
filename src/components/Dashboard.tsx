@@ -16,7 +16,9 @@ export const Dashboard: React.FC<DashboardProps> = () => {
   const { octokit, repositorySettings } = React.useContext(ConfigContext);
   const activeRepositories = React.useMemo(
     () =>
-      Object.keys(repositorySettings).filter((key) => repositorySettings[key]),
+      Object.keys(repositorySettings)
+        .filter((key) => repositorySettings[key])
+        .sort(),
     [repositorySettings]
   );
 
@@ -25,16 +27,13 @@ export const Dashboard: React.FC<DashboardProps> = () => {
     queryFn: async () => {
       if (octokit && activeRepositories.length) {
         const pulls = await Promise.all(
-          activeRepositories.flatMap((repo) => octokit.getPullRequests(repo))
+          activeRepositories.map((repo) => octokit.getPullRequests(repo))
         );
 
-        return pulls
-          .flat()
-          .sort((a, b) =>
-            a.base.repo.full_name.localeCompare(b.base.repo.full_name)
-          );
+        return pulls.flat()
       }
     },
+    enabled: octokit !== undefined && activeRepositories.length > 0,
   });
 
   const [filter, setFilter] = React.useState<string>("");
@@ -43,13 +42,19 @@ export const Dashboard: React.FC<DashboardProps> = () => {
   const labels: string[] = React.useMemo(
     () =>
       Array.from(
-        new Set(data.map((pull) => pull.labels.map(({ name }) => name)).flat())
+        new Set(
+          data
+            .filter((pull) => pull !== undefined)
+            .map((pull) => pull!.labels.map(({ name }) => name))
+            .flat()
+        )
       ),
     [data]
   );
 
   const filteredPulls = React.useMemo(() => {
     return data.filter((pull) => {
+      if (!pull) return false;
       if (
         includeLabels.length > 0 &&
         !pull.labels.some(({ name }) => includeLabels.includes(name))
@@ -79,7 +84,7 @@ export const Dashboard: React.FC<DashboardProps> = () => {
     <Box padding={2} width={"calc(100vw - 2em)"}>
       {isLoading && <PRLoadingPage />}
       {!isLoading && data.length === 0 && <LandingPage />}
-      {data.length > 0 && (
+            {data.length > 0 && (
         <>
           <Box>
             <InputFilter name="Filter" onChange={setFilter} size="small" />
@@ -95,11 +100,14 @@ export const Dashboard: React.FC<DashboardProps> = () => {
             />
           </Box>
           <Grid2 container spacing={2}>
-            {filteredPulls.map((pull) => (
-              <Grid2 key={pull.id} xl={6} xs={12}>
-                <PullRequestCard pr={pull as unknown as PullRequest} />
-              </Grid2>
-            ))}
+            {filteredPulls.map(
+              (pull) =>
+                pull && (
+                  <Grid2 key={pull.id} xl={6} xs={12}>
+                    <PullRequestCard pr={pull as unknown as PullRequest} />
+                  </Grid2>
+                )
+            )}
           </Grid2>
         </>
       )}
