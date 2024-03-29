@@ -1,8 +1,9 @@
 import React from "react";
 import { ConfigContext } from "../App";
 import { Approvals } from "../models/Approvals";
-import { Avatar, Badge, Box, Tooltip } from '@mui/material';
+import { Avatar, Badge, Box, CircularProgress, Tooltip } from '@mui/material';
 import { useOnScreen } from "../hooks/useOnScreen";
+import { useQuery } from "@tanstack/react-query";
 
 export type PullRequestsApprovalsProps = {
   owner: string;
@@ -16,20 +17,18 @@ export const PullRequestsApprovals: React.FC<PullRequestsApprovalsProps> = ({
   prNumber,
 }) => {
   const { octokit } = React.useContext(ConfigContext);
-  const [ approvals, setApprovals] = React.useState<Approvals[]>([]);
   const elementRef = React.useRef<HTMLDivElement>(null);
   const isIntersecting = useOnScreen(elementRef, "100px", true);
 
-  React.useEffect(() => {
-    if (!octokit || !isIntersecting) return;
-    octokit
-      .getPRApprovals(owner, repo, prNumber)
-      .then((response) => setApprovals(response as Approvals[]));
-
-    return () => {
-      setApprovals([]);
-    };
-  }, [octokit, owner, repo, prNumber, isIntersecting]);
+  const {isLoading, data: approvals = []} = useQuery({
+    queryKey: ["approvals", owner, repo, prNumber],
+    queryFn: async () => {
+      if (!octokit || !isIntersecting) return;
+      const response = await octokit.getPRApprovals(owner, repo, prNumber);
+      return response as Approvals[];
+    },
+    enabled: !!octokit && isIntersecting,
+  });
 
   const getBadgeProps = (state: string):  {badgeContent: string, color: "success" | "error" | "warning" | "info"}  => {
     switch (state) {
@@ -57,7 +56,12 @@ export const PullRequestsApprovals: React.FC<PullRequestsApprovalsProps> = ({
 
   return <>
     <Box ref={elementRef} color="text.secondary" sx={{display: "flex", gap: 1, alignItems: "center", marginRight: "auto" }}>
-      Approvals: <Box sx={{ display: "flex", alignItems: "center" }}> {approvals.length ? approvalAvatars : "No reviews"} </Box>
+      Approvals: 
+      {
+        isLoading ? 
+          <CircularProgress size={24} /> : 
+          <Box sx={{ display: "flex", alignItems: "center" }}> {approvals.length ? approvalAvatars : "No reviews"} </Box>
+      }  
     </Box>
   </>;
 }

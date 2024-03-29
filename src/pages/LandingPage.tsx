@@ -8,8 +8,8 @@ import {
   Tabs,
   Typography,
 } from "@mui/material";
-import PATSetupGuide from "./PATSetupGuide";
-import RepositorySetupGuide from "./RepositorySetupGuide";
+import PATSetupGuide from "../components/PATSetupGuide";
+import RepositorySetupGuide from "../components/RepositorySetupGuide";
 
 function TabPanel(props: {
   children?: React.ReactNode;
@@ -51,7 +51,7 @@ export default function LandingPage({ auth = false }) {
   };
 
   return (
-    <Container component="main" maxWidth="md">
+    <Container component="main" maxWidth="md" sx={{flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"calc(100vh - 100px)"}}>
       <Paper elevation={3} sx={{ my: 4 }}>
         <AppBar position="static" color="default">
           <Tabs

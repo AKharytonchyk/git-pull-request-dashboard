@@ -67,9 +67,7 @@ export class GitService {
   }
 
   async hasMergeConflict(owner: string, repo: string, prNumber: number) {
-    const mergeConflicts = await this.octokit.pulls.get({owner, repo, pull_number:prNumber});
-    console.log(`Merge conflicts: ${mergeConflicts.data.mergeable} - ${mergeConflicts.data.mergeable_state}`);
-    
+    const mergeConflicts = await this.octokit.pulls.get({owner, repo, pull_number:prNumber});    
     return mergeConflicts.data
   }
 

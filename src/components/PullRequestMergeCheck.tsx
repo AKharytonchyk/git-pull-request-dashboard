@@ -1,8 +1,9 @@
 import React from "react";
 import { useOnScreen } from "../hooks/useOnScreen";
 import { ConfigContext } from "../App";
-import { Tooltip, Typography } from "@mui/material";
+import { CircularProgress, Tooltip, Typography } from "@mui/material";
 import { Block, CallMerge } from "@mui/icons-material";
+import { useQuery } from "@tanstack/react-query";
 
 export type PullRequestMergeCheckProps = {
   owner: string;
@@ -17,22 +18,21 @@ export const PullRequestMergeCheck: React.FC<PullRequestMergeCheckProps> = ({
 }) => {
   const elementRef = React.useRef<HTMLDivElement>(null);
   const isIntersecting = useOnScreen(elementRef, "100px", true);
-  const [canBeMerged, setCanBeMerged] = React.useState<{
-    mergeable: boolean;
-    mergeableState: string;
-  }>({ mergeable: false, mergeableState: "" });
   const { octokit } = React.useContext(ConfigContext);
 
-  React.useEffect(() => {
-    if (octokit && isIntersecting) {
-      octokit?.hasMergeConflict(owner, repo, prNumber).then((response) => {
-        setCanBeMerged({
-          mergeable: response.mergeable ?? false,
-          mergeableState: response.mergeable_state,
-        });
-      });
-    }
-  }, [isIntersecting, octokit, owner, repo, prNumber]);
+  const {
+    isLoading,
+    data: canBeMerged = { mergeable: false, mergeableState: "" },
+  } = useQuery({
+    queryKey: ["hasMergeConflict", owner, repo, prNumber],
+    queryFn: async () => {
+      if (!octokit || !isIntersecting) return;
+      const pr = await octokit.hasMergeConflict(owner, repo, prNumber);
+
+      return { mergeable: pr.mergeable, mergeableState: pr.mergeable_state };
+    },
+    enabled: !!octokit && isIntersecting,
+  });
 
   return (
     <Typography
@@ -41,13 +41,16 @@ export const PullRequestMergeCheck: React.FC<PullRequestMergeCheckProps> = ({
       sx={{ display: "flex", gap: 1, alignItems: "center" }}
     >
       Mergeable:
-      <Tooltip
-        title={
-          canBeMerged.mergeableState === "clean"
-            ? "Can be merged"
-            : "Merging blocked"
-        }
-      >
+      {isLoading ? (
+        <CircularProgress size={24} />
+      ) : (
+        <Tooltip
+          title={
+            canBeMerged.mergeableState === "clean"
+              ? "Can be merged"
+              : "Merging blocked"
+          }
+        >
           {canBeMerged.mergeableState === "" ? (
             <></>
           ) : canBeMerged.mergeable &&
@@ -56,7 +59,8 @@ export const PullRequestMergeCheck: React.FC<PullRequestMergeCheckProps> = ({
           ) : (
             <Block color="error" />
           )}
-      </Tooltip>
+        </Tooltip>
+      )}
     </Typography>
   );
 };

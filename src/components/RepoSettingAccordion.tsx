@@ -10,6 +10,7 @@ import {
   Input,
   List,
   ListItem,
+  Typography,
 } from "@mui/material";
 import { ExpandMore } from "@mui/icons-material";
 import { Repository } from "../models/Repository";
@@ -17,28 +18,30 @@ import { RepositorySelector } from "./RepositorySelector";
 import { ConfigContext } from "../App";
 import { OrgTitle } from "./OrgAccordionTitle";
 import { UserTitle } from "./UserAccordionTitle";
-import { StarredTitle } from './StarredAccordingTitle';
+import { StarredTitle } from "./StarredAccordingTitle";
+import { useQuery } from "@tanstack/react-query";
 
 export type RepoSettingAccordionProps = {
   org?: Organization;
   type: "user" | "org" | "starred";
 };
 
-export const RepoSettingAccordion: React.FC<RepoSettingAccordionProps> = ({org, type}) => {
-  const { octokit, handleRepositorySelect, repositorySettings } = React.useContext(ConfigContext);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [repos, setRepos] = React.useState<Repository[]>([]);
+export const RepoSettingAccordion: React.FC<RepoSettingAccordionProps> = ({
+  org,
+  type,
+}) => {
+  const { octokit, handleRepositorySelect, repositorySettings } =
+    React.useContext(ConfigContext);
   const [selectedRepos, setSelectedRepos] = React.useState<Repository[]>([]);
 
-  React.useEffect(() => {
-    if (!octokit) return;
-    setIsLoading(true);
-    
-    const fetchRepos = async () => {
+  const { isLoading, data: repos = [] } = useQuery({
+    queryKey: ["repos", org?.login, type],
+    queryFn: async () => {
+      if (!octokit) return;
       let fetchedRepos: Repository[] = [];
       switch (type) {
         case "org":
-          fetchedRepos = (org && await octokit.getRepos(org.login)) ?? [];
+          fetchedRepos = (org && (await octokit.getRepos(org.login))) ?? [];
           break;
         case "user":
           fetchedRepos = await octokit.getUserRepos();
@@ -47,28 +50,26 @@ export const RepoSettingAccordion: React.FC<RepoSettingAccordionProps> = ({org, 
           fetchedRepos = await octokit.getStaredRepos();
           break;
       }
-      setRepos(fetchedRepos);
       setSelectedRepos(fetchedRepos);
-      setIsLoading(false);
-    }
-
-    fetchRepos();
-  }, [octokit, org, type]);
+      return fetchedRepos;
+    },
+    enabled: !!octokit,
+  });
 
   const repoList = useMemo(
     () =>
       selectedRepos
-      .sort((a, b) => {
-        const repoAHasSettingsTrue = repositorySettings[a.full_name] === true ? 0 : 1;
-        const repoBHasSettingsTrue = repositorySettings[b.full_name] === true ? 0 : 1;
-        if (repoAHasSettingsTrue !== repoBHasSettingsTrue) {
-          return repoAHasSettingsTrue - repoBHasSettingsTrue;
-        }
-        return a.full_name.localeCompare(b.full_name);
-      })
-      .map((repo) => (
-        <RepositorySelector key={repo.id} repository={repo} />
-      )),
+        .sort((a, b) => {
+          const repoAHasSettingsTrue =
+            repositorySettings[a.full_name] === true ? 0 : 1;
+          const repoBHasSettingsTrue =
+            repositorySettings[b.full_name] === true ? 0 : 1;
+          if (repoAHasSettingsTrue !== repoBHasSettingsTrue) {
+            return repoAHasSettingsTrue - repoBHasSettingsTrue;
+          }
+          return a.full_name.localeCompare(b.full_name);
+        })
+        .map((repo) => <RepositorySelector key={repo.id} repository={repo} />),
     [selectedRepos, repositorySettings]
   );
 
@@ -101,13 +102,10 @@ export const RepoSettingAccordion: React.FC<RepoSettingAccordionProps> = ({org, 
     }
   }, [org, type]);
 
-
   return (
     <ListItem>
       <Accordion sx={{ width: "100%", minWidth: "550px" }}>
-        <AccordionSummary expandIcon={<ExpandMore />}>
-          {title}
-        </AccordionSummary>
+        <AccordionSummary expandIcon={<ExpandMore />}>{title}</AccordionSummary>
         <AccordionActions>
           <Input
             placeholder="Filter Repositories"
@@ -117,14 +115,20 @@ export const RepoSettingAccordion: React.FC<RepoSettingAccordionProps> = ({org, 
               onFilterChange(e as React.ChangeEvent<HTMLInputElement>)
             }
           />
-          <ButtonGroup size="small" color="primary" sx={{flexShrink: 0}} disabled={isLoading}>
+          <ButtonGroup
+            size="small"
+            color="primary"
+            sx={{ flexShrink: 0 }}
+            disabled={isLoading}
+          >
             <Button onClick={() => handleSelectAll()}>Select All</Button>
             <Button onClick={() => handleSelectNone()}>Select None</Button>
           </ButtonGroup>
         </AccordionActions>
         <AccordionDetails>
-          {isLoading && <div>Loading...</div>}
-          {!isLoading && <List>{repoList}</List>}
+          {isLoading && <Typography>Loading...</Typography>}
+          {!isLoading && repos.length === 0 && <Typography>No Repositories</Typography>}
+          {!isLoading && repos.length > 0 && <List>{repoList}</List>}
         </AccordionDetails>
       </Accordion>
     </ListItem>
