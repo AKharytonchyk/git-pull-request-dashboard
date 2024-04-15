@@ -1,15 +1,46 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ScopedCssBaseline } from "@mui/material";
+import LandingPage from "./pages/LandingPage";
+import { Coverage } from "./pages/Coverage";
+import { Dashboard } from "./components/Dashboard";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <App />,
+    children: [
+      {
+        path: "/",
+        element: <Dashboard />,
+      },
+      {
+        path: "/login",
+        element: <LandingPage />,
+      }, {
+        path: "/coverage",
+        element: <Coverage />,
+      }
+    ],
+  },
+]);
+const queryClient = new QueryClient();
 
 const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
+  document.getElementById("root") as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <App />
+    <QueryClientProvider client={queryClient}>
+      <ScopedCssBaseline>
+        <RouterProvider router={router} />
+      </ScopedCssBaseline>
+    </QueryClientProvider>
   </React.StrictMode>
 );
 

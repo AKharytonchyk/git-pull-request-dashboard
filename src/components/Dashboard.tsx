@@ -9,6 +9,7 @@ import { MultiselectFilter } from "./MultiselectFilter";
 import { InputFilter } from "./InputFilter";
 import { useQuery } from "@tanstack/react-query";
 import { PRLoadingPage } from "../pages/PRLoadingPage";
+import { Navigate } from "react-router-dom";
 
 export type DashboardProps = {};
 
@@ -79,6 +80,10 @@ export const Dashboard: React.FC<DashboardProps> = () => {
       return true;
     });
   }, [data, filter, includeLabels, excludeLabels]);
+
+  if (!localStorage.getItem("token")){    
+    return <Navigate to="/login" />;
+  }
 
   return (
     <Box padding={2} width={"calc(100vw - 2em)"}>

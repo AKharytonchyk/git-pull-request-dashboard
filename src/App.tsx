@@ -1,21 +1,18 @@
 import React from "react";
 import "./App.css";
 import { GitService } from "./service/gitService";
-import { AppBar, Box, ScopedCssBaseline, Toolbar } from "@mui/material";
+import { AppBar, Box, Toolbar } from "@mui/material";
 import { SettingsDrawer } from "./SettingsDrawer";
-import { Dashboard } from "./components/Dashboard";
 import { AuthHeader } from "./components/AuthHeader";
 import { UnAuthHeader } from "./components/UnAuthHeader";
-import LandingPage from "./pages/LandingPage";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-const queryClient = new QueryClient();
+import { Outlet } from "react-router-dom";
 
 export const ConfigContext = React.createContext<{
   octokit: GitService | null;
   repositorySettings: Record<string, boolean>;
   handleRepositorySelect: (repository: string, selected: boolean) => void;
 }>({ octokit: null, repositorySettings: {}, handleRepositorySelect: () => {} });
+
 
 function App() {
   const [user, setUser] = React.useState<{
@@ -93,51 +90,46 @@ function App() {
 
   return (
     <>
-      <QueryClientProvider client={queryClient}>
-        <ScopedCssBaseline>
-          <ConfigContext.Provider
-            value={{ octokit, repositorySettings, handleRepositorySelect }}
-          >
-            <AppBar
-              position="static"
-              color="default"
-              sx={{ position: "fixed", zIndex: 100 }}
-            >
-              <Toolbar sx={{ justifyContent: "flex-end" }}>
-                {!user?.login ? (
-                  <UnAuthHeader setToken={setToken} onLogin={onLogin} />
-                ) : (
-                  <AuthHeader
-                    user={user}
-                    logOut={logOut}
-                    setOpenSettings={setOpenSettings}
-                  />
-                )}
-              </Toolbar>
-            </AppBar>
-            <Box
-              component={"main"}
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                justifyContent: "center",
-                alignItems: "center",
-                paddingTop: "4em",
-              }}
-            >
-              {octokit && <Dashboard />}
-              {!octokit && <LandingPage />}
-            </Box>
-            {octokit && (
-              <SettingsDrawer
-                opened={openSettings}
-                onClose={() => setOpenSettings(false)}
+      <ConfigContext.Provider
+        value={{ octokit, repositorySettings, handleRepositorySelect }}
+      >
+        <AppBar
+          position="static"
+          color="default"
+          sx={{ position: "fixed", zIndex: 100 }}
+        >
+          <Toolbar sx={{ justifyContent: "flex-end" }}>
+            {!user?.login ? (
+              <UnAuthHeader setToken={setToken} onLogin={onLogin} />
+            ) : (
+              <AuthHeader
+                user={user}
+                logOut={logOut}
+                setOpenSettings={setOpenSettings}
               />
             )}
-          </ConfigContext.Provider>
-        </ScopedCssBaseline>
-      </QueryClientProvider>
+          </Toolbar>
+        </AppBar>
+        <Box
+          component={"main"}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            justifyContent: "center",
+            alignItems: "center",
+            paddingTop: "4em",
+          }}
+        >
+          <Outlet />
+        </Box>
+        {octokit && (
+          <SettingsDrawer
+            opened={openSettings}
+            onClose={() => setOpenSettings(false)}
+          />
+        )}
+      </ConfigContext.Provider>
     </>
   );
 }
