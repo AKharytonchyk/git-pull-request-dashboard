@@ -66,7 +66,7 @@ export const Coverage: React.FC = () => {
           No coverage matching you selected repositories was found!
         </Typography>
       )}
-      {data && data.length > 0 && (
+      {tableData && tableData.length > 0 && (
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
