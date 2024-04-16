@@ -26,7 +26,7 @@ export const Coverage: React.FC = () => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["coverage"],
     queryFn: async () => {
-      const coverage = await fetch("/coverage.json", {
+      const coverage = await fetch("coverage.json", {
         headers: {
           Accept: "application/json",
         },

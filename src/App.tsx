@@ -5,7 +5,7 @@ import { AppBar, Box, Toolbar } from "@mui/material";
 import { SettingsDrawer } from "./SettingsDrawer";
 import { AuthHeader } from "./components/AuthHeader";
 import { UnAuthHeader } from "./components/UnAuthHeader";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 
 export const ConfigContext = React.createContext<{
   octokit: GitService | null;
@@ -23,6 +23,7 @@ function App() {
   const [token, setToken] = React.useState<string>();
   const [octokit, setOctokit] = React.useState<GitService | null>(null);
   const [openSettings, setOpenSettings] = React.useState<boolean>(false);
+  const navigate = useNavigate();
 
   const onLogin = React.useCallback(() => {
     if (token) {
@@ -42,9 +43,10 @@ function App() {
         setUser(user.data);
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user.data));
+        navigate("/");
       });
     }
-  }, [token]);
+  }, [token, navigate]);
 
   React.useEffect(() => {
     setToken(localStorage.getItem("token") ?? undefined);
@@ -64,7 +66,8 @@ function App() {
     localStorage.removeItem("user");
     setUser(undefined);
     setOctokit(null);
-  }, []);
+    navigate("/login");
+  }, [navigate]);
 
   const [repositorySettings, setRepositorySettings] = React.useState<
     Record<string, boolean>
