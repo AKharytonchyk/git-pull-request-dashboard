@@ -2,6 +2,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Box,
+  CircularProgress,
   Paper,
   Table,
   TableBody,
@@ -15,12 +16,42 @@ import { Navigate } from "react-router-dom";
 import { ConfigContext } from "../App";
 import ErrorMessage from "../components/MissingCoverageErrorMessage";
 
+interface CoverageData {
+  lines: { pct: number };
+  statements: { pct: number };
+  functions: { pct: number };
+  branches: { pct: number };
+}
+
+interface RepositoryData {
+  repoName: string;
+  lines: number;
+  statements: number;
+  functions: number;
+  branches: number;
+}
+
 const coverageStyles = (coverage: number) => {
   console.log(coverage, coverage < 60);
   if (coverage < 60) return { color: "#f44336", fontWeight: "bolder" };
   if (coverage < 80) return { color: "#ed6c02", fontWeight: "bold" };
   return { color: "#4caf50", fontWeight: "normal" };
 };
+
+const calculateSummary = (tableData: RepositoryData[]) => ({
+  lines: (
+    tableData.reduce((acc: any, row: { lines: any; }) => acc + row.lines, 0) / tableData.length
+  ).toFixed(2),
+  statements: (
+    tableData.reduce((acc: any, row: { statements: any; }) => acc + row.statements, 0) / tableData.length
+  ).toFixed(2),
+  functions: (
+    tableData.reduce((acc: any, row: { functions: any; }) => acc + row.functions, 0) / tableData.length
+  ).toFixed(2),
+  branches: (
+    tableData.reduce((acc: any, row: { branches: any; }) => acc + row.branches, 0) / tableData.length
+  ).toFixed(2),
+});
 
 export const Coverage: React.FC = () => {
   const { data, isLoading, isError } = useQuery({
@@ -31,7 +62,7 @@ export const Coverage: React.FC = () => {
           Accept: "application/json",
         },
       });
-      return coverage.json();
+      return coverage.json() as Promise<Record<string, CoverageData>> ;
     },
     retry: false,
   });
@@ -53,15 +84,20 @@ export const Coverage: React.FC = () => {
       });
   }, [data, repositorySettings]);
 
+  const summaryData = React.useMemo(
+    () => calculateSummary(tableData),
+    [tableData]
+  );
+
   if (!localStorage.getItem("token")) {
     return <Navigate to="/login" />;
   }
   return (
     <Box padding={2} width={"calc(100vw - 2em)"}>
       <h1>Coverage</h1>
-      {isLoading && <p>Loading...</p>}
+      {isLoading && <CircularProgress color="inherit" />}
       {isError && <ErrorMessage showError={true} />}
-      {data && data.length === 0 && (
+      {data && tableData.length === 0 && (
         <Typography variant="h6">
           No coverage matching you selected repositories was found!
         </Typography>
@@ -99,20 +135,16 @@ export const Coverage: React.FC = () => {
               <TableRow key="Summary">
                 <TableCell sx={{ fontWeight: "bold" }}>Summary</TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}>
-                  {tableData.reduce((acc, row) => acc + row.lines, 0) /
-                    tableData.length}
+                  {summaryData.lines}
                 </TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}>
-                  {tableData.reduce((acc, row) => acc + row.statements, 0) /
-                    tableData.length}
+                  {summaryData.statements}
                 </TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}>
-                  {tableData.reduce((acc, row) => acc + row.functions, 0) /
-                    tableData.length}
+                  {summaryData.functions}
                 </TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}>
-                  {tableData.reduce((acc, row) => acc + row.branches, 0) /
-                    tableData.length}
+                  {summaryData.branches}
                 </TableCell>
               </TableRow>
             </TableBody>
