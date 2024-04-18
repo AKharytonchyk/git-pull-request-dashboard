@@ -43,12 +43,15 @@ export const MultiselectFilter: React.FC<MultiselectFilterProps> = ({
     onChange(newValue);
   };
 
+  const id = React.useMemo(() => name.split(" ").join("-").toLowerCase(), [name]);
+  const labelId = React.useMemo(() => `${id}-label`, [id]);
+
   return (
     <FormControl sx={{ m: 1, minWidth: 300 }}>
-      <InputLabel id="options-label" size="small">{name}</InputLabel>
+      <InputLabel id={labelId} size="small">{name}</InputLabel>
       <Select
-        labelId="options-label"
-        id="options"
+        labelId={labelId}
+        id={id}
         multiple
         value={selectedOptions}
         onChange={handleChange}

@@ -29,8 +29,8 @@ export const AuthHeader: React.FC<AuthHeaderProps> = ({
         showLabels
         value={location.pathname}
         onChange={(event, newValue) => navigate(newValue)}>
-        <BottomNavigationAction label="Dashboard" icon={<Dashboard />} sx={{ backgroundColor: "#f5f5f5"}} value="/"/>
-        <BottomNavigationAction label="Coverage" icon={<Biotech />} sx={{ backgroundColor: "#f5f5f5"}} value="/coverage"/>
+        <BottomNavigationAction label="Dashboard" icon={<Dashboard />} sx={{ backgroundColor: "#f5f5f5"}} value="/" title="Dashboard"/>
+        <BottomNavigationAction label="Coverage" icon={<Biotech />} sx={{ backgroundColor: "#f5f5f5"}} value="/coverage" title="Coverage"/>
       </BottomNavigation>
       <Box
         sx={{
