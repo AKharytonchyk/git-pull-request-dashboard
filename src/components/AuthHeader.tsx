@@ -24,7 +24,7 @@ export const AuthHeader: React.FC<AuthHeaderProps> = ({
   const navigate = useNavigate();
 
   return (
-    <>
+    <Box sx={{display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100vw"}}>
       <BottomNavigation
         showLabels
         value={location.pathname}
@@ -60,6 +60,6 @@ export const AuthHeader: React.FC<AuthHeaderProps> = ({
           Log Out
         </Button>
       </Box>
-    </>
+    </Box>
   );
 };
