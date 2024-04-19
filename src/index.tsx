@@ -7,8 +7,8 @@ import { RouterProvider, createHashRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ScopedCssBaseline } from "@mui/material";
 import LandingPage from "./pages/LandingPage";
-import { Coverage } from "./pages/Coverage";
 import { Dashboard } from "./components/Dashboard";
+import { Coverage } from "./pages/Coverage";
 
 const router = createHashRouter([
   {
