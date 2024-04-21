@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Tooltip } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import { ArrowDownward, ArrowUpward } from "@mui/icons-material";
 
 export const CoverageDiffIcon = (diff: number, prev: number) => {

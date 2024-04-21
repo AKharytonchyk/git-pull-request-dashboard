@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, TableCell, Tooltip, Typography } from "@mui/material";
+import { Box, TableCell, Typography } from "@mui/material";
 import RYGGradient from "../utils/RYGGradient";
 import { CoverageDiffIcon } from "./CoverageDiffIcon";
 
