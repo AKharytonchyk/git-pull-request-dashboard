@@ -11,7 +11,7 @@ export const ConfigContext = React.createContext<{
   octokit: GitService | null;
   repositorySettings: Record<string, boolean>;
   handleRepositorySelect: (repository: string, selected: boolean) => void;
-}>({ octokit: null, repositorySettings: {}, handleRepositorySelect: () => {} });
+}>({ octokit: null, repositorySettings: {}, handleRepositorySelect: () => {}});
 
 
 function App() {
@@ -94,7 +94,7 @@ function App() {
   return (
     <>
       <ConfigContext.Provider
-        value={{ octokit, repositorySettings, handleRepositorySelect }}
+        value={{ octokit, repositorySettings, handleRepositorySelect,}}
       >
         <AppBar
           position="static"
