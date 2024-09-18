@@ -36,8 +36,6 @@ repositories.forEach((repo) => {
   const updatedCoverage = Object.keys(total).reduce((acc, key) => {
     const current = total[key].pct;
     const previous = storedCoverage?.[key] || 0;
-
-    console.warn("storedCoverage", storedCoverage);
     const diff = current - previous;
 
     if (acc.current === undefined) {
@@ -51,7 +49,6 @@ repositories.forEach((repo) => {
     }
 
     acc.current[key] = current;
-    acc.previous[key] = previous;
     acc.diff[key] = diff;
     acc.changed = diff !== 0 && previous !== 0;
 
@@ -63,4 +60,7 @@ repositories.forEach((repo) => {
 });
 
 console.warn("parsedSummary", parsedSummary);
-fs.writeFileSync(parsedSummaryPath, lz.compressToBase64(JSON.stringify(parsedSummary)));
+fs.writeFileSync(
+  parsedSummaryPath,
+  lz.compressToBase64(JSON.stringify(parsedSummary))
+);
