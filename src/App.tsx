@@ -11,7 +11,8 @@ export const ConfigContext = React.createContext<{
   octokit: GitService | null;
   repositorySettings: Record<string, boolean>;
   handleRepositorySelect: (repository: string, selected: boolean) => void;
-}>({ octokit: null, repositorySettings: {}, handleRepositorySelect: () => {}});
+  saveRawSettings: (settings: Record<string, boolean> | undefined) => void;
+}>({ octokit: null, repositorySettings: {}, handleRepositorySelect: () => { }, saveRawSettings: () => { } });
 
 
 function App() {
@@ -84,6 +85,13 @@ function App() {
     []
   );
 
+  const saveRawSettings = React.useCallback((settings: Record<string, boolean> | undefined) => {
+    if (!settings) return;
+
+    setRepositorySettings(settings);
+    localStorage.setItem("REPOSITORY_CONFIG", JSON.stringify(settings));
+  }, []);
+
   React.useEffect(() => {
     const repositoryConfig = JSON.parse(
       localStorage.getItem("REPOSITORY_CONFIG") ?? "{}"
@@ -94,7 +102,7 @@ function App() {
   return (
     <>
       <ConfigContext.Provider
-        value={{ octokit, repositorySettings, handleRepositorySelect,}}
+        value={{ octokit, repositorySettings, handleRepositorySelect, saveRawSettings }}
       >
         <AppBar
           position="static"

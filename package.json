@@ -16,6 +16,7 @@
     "@types/node": "^16.18.91",
     "@types/react": "^18.2.71",
     "@types/react-dom": "^18.2.22",
+    "@uiw/react-json-view": "^2.0.0-alpha.27",
     "lz-string": "^1.5.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -37,7 +38,12 @@
     ],
     "rules": {
       "no-unused-vars": "warn",
-      "max-len": ["warn", { "code": 250 }]
+      "max-len": [
+        "warn",
+        {
+          "code": 250
+        }
+      ]
     }
   },
   "browserslist": {
