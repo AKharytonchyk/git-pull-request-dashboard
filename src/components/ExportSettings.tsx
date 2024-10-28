@@ -37,7 +37,7 @@ export const ExportSettings: React.FC<ExportSettingsProps> = ({ isOpen }) => {
     setInputSettings(JSON.stringify(repositorySettings, null, 2));
   }, [isOpen, repositorySettings]);
 
-  const regexKey = /^[A-Za-z0-9\-]+\/[A-Za-z0-9\.\-_]+$/;
+  const regexKey = /^[A-Za-z0-9-]+\/[A-Za-z0-9.\-_]+$/;
 
   const validateJson = (input: string) => {
     try {
@@ -93,7 +93,19 @@ export const ExportSettings: React.FC<ExportSettingsProps> = ({ isOpen }) => {
         {error && <Typography color="error" sx={{ mb: 1 }}>{error}</Typography>}
       </Box>
       {isEditing
-        ? <TextField error={!isValidJson} label="JSON" value={inputSettings} fullWidth multiline rows={rows} onChange={onChange} sx={{ fontSize: 13, fontFamily: '-apple-system, "system-ui", "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif' }} />
+        ? <TextField 
+          error={!isValidJson} 
+          label="JSON" 
+          value={inputSettings} 
+          fullWidth 
+          multiline 
+          rows={rows} 
+          onChange={onChange} 
+          sx={{ 
+            fontSize: 13, 
+            fontFamily: '-apple-system, "system-ui", "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif' 
+          }}
+          />
         : <JsonViewEditor editable={true} value={repositorySettings} style={githubLightTheme} displayDataTypes={false} />
       }
     </Box>
