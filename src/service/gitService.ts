@@ -1,11 +1,9 @@
 import { Octokit } from "@octokit/rest";
+import rateLimiter from "../utils/RateLimiterQueue";
 
 export class GitService {
   private readonly octokit: Octokit;
-  constructor(
-    private readonly baseUrl: string,
-    private readonly token: string
-  ) {
+  constructor(baseUrl: string, token: string) {
     this.octokit = new Octokit({
       baseUrl,
       auth: token,
@@ -13,7 +11,7 @@ export class GitService {
   }
 
   getPulls(owner: string, repo: string) {
-    return this.octokit.pulls.list({ owner, repo, state: "open" });
+    return rateLimiter.enqueue(() => this.octokit.pulls.list({ owner, repo }));
   }
 
   async getPullRequests(repo: string) {
@@ -28,55 +26,74 @@ export class GitService {
   }
 
   getOrganizations() {
-    return this.octokit.orgs.listForAuthenticatedUser();
+    return rateLimiter.enqueue(() =>
+      this.octokit.orgs.listForAuthenticatedUser()
+    );
   }
 
   async getRepos(owner: string) {
-    const repos = await this.octokit.paginate(this.octokit.repos.listForOrg, {
-      org: owner,
-      per_page: 100,
-      timeout: 5000,
-    });
+    const repos = await rateLimiter.enqueue(() =>
+      this.octokit.paginate(this.octokit.repos.listForUser, {
+        username: owner,
+        per_page: 100,
+        timeout: 5000,
+      })
+    );
+
     return repos
       .filter((repo) => !repo.archived)
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
   async getStaredRepos() {
-    return this.octokit.paginate(
-      this.octokit.activity.listReposStarredByAuthenticatedUser,
-      { per_page: 100, timeout: 5000 }
+    return rateLimiter.enqueue(() =>
+      this.octokit.paginate(
+        this.octokit.activity.listReposStarredByAuthenticatedUser,
+        { per_page: 100, timeout: 5000 }
+      )
     );
   }
 
   async getUserRepos() {
-    return this.octokit.paginate(this.octokit.repos.listForAuthenticatedUser, {
-      per_page: 100,
-      timeout: 5000,
-      type: "owner",
-    });
+    return rateLimiter.enqueue(() =>
+      this.octokit.paginate(this.octokit.repos.listForAuthenticatedUser, {
+        per_page: 100,
+        timeout: 5000,
+        type: "owner",
+      })
+    );
   }
 
   async getPRChecksStatus(owner: string, repo: string, prNumber: number) {
-    return this.octokit.checks.listForRef({
-      owner,
-      repo,
-      ref: `pull/${prNumber}/head`,
-      filter: "latest",
-    });
+    return rateLimiter.enqueue(() =>
+      this.octokit.checks.listForRef({
+        owner,
+        repo,
+        ref: `pull/${prNumber}/head`,
+        filter: "latest",
+      })
+    );
   }
 
   async hasMergeConflict(owner: string, repo: string, prNumber: number) {
-    const mergeConflicts = await this.octokit.pulls.get({owner, repo, pull_number:prNumber});    
-    return mergeConflicts.data
+    const mergeConflicts = await rateLimiter.enqueue(() =>
+      this.octokit.pulls.get({
+        owner,
+        repo,
+        pull_number: prNumber,
+      })
+    );
+    return mergeConflicts.data;
   }
 
   async getPRApprovals(owner: string, repo: string, prNumber: number) {
-    const reviews = await this.octokit.pulls.listReviews({
-      owner,
-      repo,
-      pull_number: prNumber,
-    });
+    const reviews = await rateLimiter.enqueue(() =>
+      this.octokit.pulls.listReviews({
+        owner,
+        repo,
+        pull_number: prNumber,
+      })
+    );
 
     if (
       !reviews.data ||

@@ -3,6 +3,14 @@ import React from 'react';
 import { Typography, Box } from '@mui/material';
 import { Settings } from '@mui/icons-material';
 
+const Outline: React.FC<{text: string}> = ({text}) => {
+  return (
+    <div>
+      <span>{text}</span>
+    </div>
+  )
+}
+
 const PATSetupGuide = () => {
   return (
     <>
@@ -34,6 +42,8 @@ const PATSetupGuide = () => {
         <Typography paragraph sx={{marginTop: 2}}>
           All the selection would be saved automatically in your browser. As soon as you select the repositories you would be able to see the pull requests if any are available.
         </Typography>
+
+        <Outline text={"Note: \nABC"}/>
       </Box>
     </>
   );
