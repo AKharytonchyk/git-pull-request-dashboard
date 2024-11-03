@@ -31,22 +31,22 @@ jobs:
           node-version: '20'
       - name: Build
         run: |
-          export REACT_APP_GITHUB_API_URL=$REACT_APP_GITHUB_API_URL
+          export VITE_GITHUB_API_URL=$VITE_GITHUB_API_URL
           npm ci
           npm run build
         env:
           CI: true
-          REACT_APP_GITHUB_API_URL: "https://api.github.com"
+          VITE_GITHUB_API_URL: "https://api.github.com"
       - name: Update HTML Links
         run: |
-          sed -i 's|href="/|href="|g' build/index.html
-          sed -i 's|src="/|src="|g' build/index.html
+          sed -i 's|href="/|href="|g' dist/index.html
+          sed -i 's|src="/|src="|g' dist/index.html
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './build'
+          path: './dist'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
