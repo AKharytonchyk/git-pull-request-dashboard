@@ -11,9 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { PRLoadingPage } from "../pages/PRLoadingPage";
 import { Navigate } from "react-router-dom";
 
-export type DashboardProps = {};
-
-export const Dashboard: React.FC<DashboardProps> = () => {
+export const Dashboard: React.FC = () => {
   const { octokit, repositorySettings } = React.useContext(ConfigContext);
   const activeRepositories = React.useMemo(
     () =>

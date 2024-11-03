@@ -43,7 +43,7 @@ export const ExportSettings: React.FC<ExportSettingsProps> = ({ isOpen }) => {
     try {
       const parsedJson = JSON.parse(input);
 
-      for (let key in parsedJson) {
+      for (const key in parsedJson) {
         if (!regexKey.test(key) || typeof parsedJson[key] !== 'boolean') {
           throw new Error(`Invalid key or value. Key: "${key}", Value: ${parsedJson[key]}`);
         }
