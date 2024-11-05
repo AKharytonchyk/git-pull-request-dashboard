@@ -28,7 +28,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '20'
+          node-version: '22'
       - name: Build
         run: |
           export VITE_GITHUB_API_URL=$VITE_GITHUB_API_URL

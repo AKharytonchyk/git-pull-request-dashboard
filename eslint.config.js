@@ -25,6 +25,7 @@ export default tseslint.config(
       ],
       "max-len": ["error", { "code": 250 }],
       "@typescript-eslint/no-explicit-any": "off",
+      'eol-last': ['error', 'always'],
     },
   },
 )
