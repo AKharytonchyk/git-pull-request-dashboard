@@ -3,7 +3,7 @@ import { ConfigContext } from "../App";
 import { PullRequest } from "../models/PullRequest";
 import PullRequestCard from "./PullRequestCard";
 import { Box } from "@mui/material";
-import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
+import Grid from "@mui/material/Grid2";
 import LandingPage from "../pages/LandingPage";
 import { MultiselectFilter } from "./MultiselectFilter";
 import { InputFilter } from "./InputFilter";
@@ -110,16 +110,16 @@ export const Dashboard: React.FC = () => {
               onChange={setExcludeLabels}
             />
           </Box>
-          <Grid2 container spacing={2}>
+          <Grid container spacing={2}>
             {filteredPulls.map(
               (pull) =>
                 pull && (
-                  <Grid2 key={pull.id} xl={6} xs={12}>
+                  <Grid key={pull.id} size={{xl: 6, xs:12 }}>
                     <PullRequestCard pr={pull as unknown as PullRequest} />
-                  </Grid2>
+                  </Grid>
                 )
             )}
-          </Grid2>
+          </Grid>
         </>
       )}
     </Box>
