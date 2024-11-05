@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
@@ -6,9 +6,9 @@ import reportWebVitals from "./reportWebVitals";
 import { RouterProvider, createHashRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ScopedCssBaseline } from "@mui/material";
-import LandingPage from "./pages/LandingPage";
-import { Dashboard } from "./components/Dashboard";
-import { Coverage } from "./pages/Coverage";
+import LandingPage from "./pages/LandingPage.lazy";
+import Dashboard from "./pages/Dashboard.lazy";
+import Coverage from "./pages/Coverage.lazy";
 
 const router = createHashRouter([
   {
@@ -17,18 +17,32 @@ const router = createHashRouter([
     children: [
       {
         path: "/",
-        element: <Dashboard />,
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <Dashboard />
+          </Suspense>
+        ),
       },
       {
         path: "/login",
-        element: <LandingPage />,
-      }, {
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <LandingPage />
+          </Suspense>
+        ),
+      },
+      {
         path: "/coverage",
-        element: <Coverage />,
-      }
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <Coverage />
+          </Suspense>
+        ),
+      },
     ],
   },
 ]);
+
 const queryClient = new QueryClient();
 
 const root = ReactDOM.createRoot(

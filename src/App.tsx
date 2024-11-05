@@ -29,7 +29,7 @@ function App() {
   const onLogin = React.useCallback(() => {
     if (token) {
       const octoKit = new GitService(
-        (import.meta as any).env.VITE_GITHUB_API_URL || "https://api.github.com/",
+        (import.meta as any).env.VITE_GITHUB_API_URL || "https://api.github.com",
         token
       );
       octoKit.testAuthentication().then((user) => {

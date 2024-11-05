@@ -5,7 +5,7 @@ export class GitService {
   private readonly octokit: Octokit;
   constructor(baseUrl: string, token: string) {
     this.octokit = new Octokit({
-      baseUrl,
+      baseUrl: !baseUrl.endsWith("/") ? baseUrl : baseUrl.substring(0, baseUrl.length - 1),
       auth: token,
     });
   }

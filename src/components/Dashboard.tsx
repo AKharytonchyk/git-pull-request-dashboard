@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense, useEffect } from "react";
 import { ConfigContext } from "../App";
 import { PullRequest } from "../models/PullRequest";
 import PullRequestCard from "./PullRequestCard";
@@ -7,32 +7,40 @@ import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
 import LandingPage from "../pages/LandingPage";
 import { MultiselectFilter } from "./MultiselectFilter";
 import { InputFilter } from "./InputFilter";
-import { useQuery } from "@tanstack/react-query";
-import { PRLoadingPage } from "../pages/PRLoadingPage";
+import { useQueries } from "@tanstack/react-query";
 import { Navigate } from "react-router-dom";
+import PRLoadingPageLazy from "../pages/PrLoadingPage.lazy";
 
 export const Dashboard: React.FC = () => {
   const { octokit, repositorySettings } = React.useContext(ConfigContext);
-  const activeRepositories = React.useMemo(
-    () =>
-      Object.keys(repositorySettings)
-        .filter((key) => repositorySettings[key])
-        .sort(),
-    [repositorySettings]
+  const [activeRepositories, setActiveRepositories] = React.useState<string[]>(
+    []
   );
 
-  const { data = [], isLoading } = useQuery({
-    queryKey: ["pulls"],
-    queryFn: async () => {
-      if (octokit && activeRepositories.length) {
-        const pulls = await Promise.all(
-          activeRepositories.map((repo) => octokit.getPullRequests(repo))
-        );
+  useEffect(() => {
+    setActiveRepositories(
+      Object.keys(repositorySettings)
+        .filter((key) => repositorySettings[key])
+        .sort()
+    );
+  }, [repositorySettings]);
 
-        return pulls.flat()
-      }
+  const { data, pending } = useQueries({
+    queries: activeRepositories.map((repo) => ({
+      queryKey: ["pulls", repo],
+      queryFn: async () => {
+        if (octokit) {
+          return octokit.getPullRequests(repo);
+        }
+      },
+      enabled: octokit !== undefined,
+    })),
+    combine: (results) => {
+      return {
+        data: results.map((result) => result.data ?? [] as PullRequest[]).flat(),
+        pending: results.some((result) => result.isLoading),
+      };
     },
-    enabled: octokit !== undefined && activeRepositories.length > 0,
   });
 
   const [filter, setFilter] = React.useState<string>("");
@@ -79,15 +87,19 @@ export const Dashboard: React.FC = () => {
     });
   }, [data, filter, includeLabels, excludeLabels]);
 
-  if (!localStorage.getItem("token")){    
+  if (!localStorage.getItem("token")) {
     return <Navigate to="/login" />;
   }
 
   return (
     <Box padding={2} width={"calc(100vw - 2em)"}>
-      {isLoading && <PRLoadingPage />}
-      {!isLoading && data.length === 0 && <LandingPage />}
-            {data.length > 0 && (
+      {pending && data.length === 0 && (
+        <Suspense fallback={<div>Loading...</div>}>
+          <PRLoadingPageLazy />
+        </Suspense>
+      )}
+      {!pending && data.length === 0 && <LandingPage />}
+      {data.length > 0 && (
         <>
           <Box>
             <InputFilter name="Filter" onChange={setFilter} size="small" />
@@ -117,3 +129,5 @@ export const Dashboard: React.FC = () => {
     </Box>
   );
 };
+
+export default Dashboard;

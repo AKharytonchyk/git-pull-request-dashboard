@@ -14,3 +14,5 @@ export const PRLoadingPage: React.FC = () => {
     </Box>
   );
 }
+
+export default PRLoadingPage;

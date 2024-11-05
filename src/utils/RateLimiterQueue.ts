@@ -17,16 +17,20 @@ class RateLimiterQueue {
     }, 60000);
   }
 
-  async enqueue<T>(requestFunction: () => Promise<T>): Promise<T> {
+  async enqueue<T>(requestFunction: () => Promise<T>, force = false): Promise<T> {
     return new Promise((resolve, reject) => {
-      this.queue.push(async () => {
+      const request = async () => {
         try {
           const result = await requestFunction();
           resolve(result);
         } catch (error) {
           reject(error);
         }
-      });
+      }
+
+      if(force) this.queue.unshift(request);
+      else  this.queue.push(request);
+      
       if (!this.isProcessing) {
         this.processQueue();
       }
@@ -40,12 +44,11 @@ class RateLimiterQueue {
       const requestFunction = this.queue.shift();
       if (requestFunction) {
         try {
-          await requestFunction();
+          await Promise.all([requestFunction(), this.sleep(this.delay)]);
           console.debug(`Request processed. Queue size after: ${this.queue.length}`);
         } catch (error) {
           console.error("Error processing request:", error);
         }
-        await this.sleep(this.delay);
       }
     }
     this.isProcessing = false;

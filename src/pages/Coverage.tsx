@@ -105,3 +105,5 @@ export const Coverage: React.FC = () => {
     </Box>
   );
 };
+
+export default Coverage;

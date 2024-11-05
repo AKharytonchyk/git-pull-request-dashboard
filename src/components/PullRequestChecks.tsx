@@ -44,8 +44,6 @@ export const PullRequestChecks: React.FC<PullRequestChecksProps> = ({
     [checks]
   );
 
-  if (checks.length > 0 && checks.some(({ conclusion }) => conclusion !== 'success')) console.warn("checks", checks);
-
   return (
     <>
       <Typography
