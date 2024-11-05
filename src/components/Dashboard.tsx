@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from "react";
+import React, { useEffect } from "react";
 import { ConfigContext } from "../App";
 import { PullRequest } from "../models/PullRequest";
 import PullRequestCard from "./PullRequestCard";
@@ -9,7 +9,7 @@ import { MultiselectFilter } from "./MultiselectFilter";
 import { InputFilter } from "./InputFilter";
 import { useQueries } from "@tanstack/react-query";
 import { Navigate } from "react-router-dom";
-import PRLoadingPageLazy from "../pages/PrLoadingPage.lazy";
+import PRLoadingPage from "../pages/PRLoadingPage";
 
 export const Dashboard: React.FC = () => {
   const { octokit, repositorySettings } = React.useContext(ConfigContext);
@@ -93,11 +93,7 @@ export const Dashboard: React.FC = () => {
 
   return (
     <Box padding={2} width={"calc(100vw - 2em)"}>
-      {pending && data.length === 0 && (
-        <Suspense fallback={<div>Loading...</div>}>
-          <PRLoadingPageLazy />
-        </Suspense>
-      )}
+      {pending && data.length === 0 && <PRLoadingPage />}
       {!pending && data.length === 0 && <LandingPage />}
       {data.length > 0 && (
         <>

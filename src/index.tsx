@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
@@ -6,9 +6,9 @@ import reportWebVitals from "./reportWebVitals";
 import { RouterProvider, createHashRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ScopedCssBaseline } from "@mui/material";
-import LandingPage from "./pages/LandingPage.lazy";
-import Dashboard from "./pages/Dashboard.lazy";
-import Coverage from "./pages/Coverage.lazy";
+import Coverage from "./pages/Coverage";
+import LandingPage from "./pages/LandingPage";
+import Dashboard from "./components/Dashboard";
 
 const router = createHashRouter([
   {
@@ -17,27 +17,15 @@ const router = createHashRouter([
     children: [
       {
         path: "/",
-        element: (
-          <Suspense fallback={<div>Loading...</div>}>
-            <Dashboard />
-          </Suspense>
-        ),
+        element: <Dashboard />,
       },
       {
         path: "/login",
-        element: (
-          <Suspense fallback={<div>Loading...</div>}>
-            <LandingPage />
-          </Suspense>
-        ),
+        element: <LandingPage />,
       },
       {
         path: "/coverage",
-        element: (
-          <Suspense fallback={<div>Loading...</div>}>
-            <Coverage />
-          </Suspense>
-        ),
+        element: <Coverage />,
       },
     ],
   },
