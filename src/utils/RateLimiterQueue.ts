@@ -1,73 +1,64 @@
 class RateLimiterQueue {
-  private queue: any[];
-  private delay: number;
-  private isProcessing: boolean;
-  private loggingInterval: NodeJS.Timeout | null;
+  private queue: Array<() => Promise<void>>;
+  private maxRequestsPerMinute: number;
+  private activeRequests: number;
+  private requestTimestamps: number[];
 
   constructor(maxRequestsPerMinute: number) {
     this.queue = [];
-    this.delay = 60000 / maxRequestsPerMinute;
-    this.isProcessing = false;
+    this.maxRequestsPerMinute = maxRequestsPerMinute;
+    this.activeRequests = 0;
+    this.requestTimestamps = [];
 
-    this.loggingInterval = setInterval(() => {
-      const statusMessage = this.isProcessing
-        ? "Reached rate limit. Waiting to process next request."
-        : "Currently processing requests.";
-      console.log(`Queue size: ${this.queue.length}. Rate limit: ${maxRequestsPerMinute}. Estimated time: ${this.queue.length / maxRequestsPerMinute} minutes. ${statusMessage}`);
+    setInterval(() => {
+      this.cleanupOldTimestamps();
     }, 60000);
   }
 
-  async enqueue<T>(requestFunction: () => Promise<T>, force = false): Promise<T> {
+  async enqueue<T>(requestFunction: () => Promise<T>): Promise<T> {
     return new Promise((resolve, reject) => {
-      const request = async () => {
+      this.queue.push(async () => {
         try {
+          this.activeRequests++;
           const result = await requestFunction();
           resolve(result);
         } catch (error) {
           reject(error);
+        } finally {
+          this.activeRequests--;
+          this.requestTimestamps.push(Date.now());
+          this.processQueue();
         }
-      }
-
-      if(force) this.queue.unshift(request);
-      else  this.queue.push(request);
-      
-      if (!this.isProcessing) {
-        this.processQueue();
-      }
+      });
+      this.processQueue();
     });
   }
 
   private async processQueue() {
-    this.isProcessing = true;
-    while (this.queue.length > 0) {
-      console.debug(`Processing request. Queue size before: ${this.queue.length}`);
+    this.cleanupOldTimestamps();
+
+    while (this.queue.length > 0 && this.canProcessMoreRequests()) {
       const requestFunction = this.queue.shift();
       if (requestFunction) {
-        try {
-          await Promise.all([requestFunction(), this.sleep(this.delay)]);
-          console.debug(`Request processed. Queue size after: ${this.queue.length}`);
-        } catch (error) {
+        requestFunction().catch((error) => {
           console.error("Error processing request:", error);
-        }
+        });
       }
     }
-    this.isProcessing = false;
   }
 
-  private sleep(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+  private canProcessMoreRequests(): boolean {
+    return this.requestTimestamps.length < this.maxRequestsPerMinute;
+  }
+
+  private cleanupOldTimestamps() {
+    const oneMinuteAgo = Date.now() - 60000;
+    this.requestTimestamps = this.requestTimestamps.filter(timestamp => timestamp > oneMinuteAgo);
   }
 
   async processAll<T>(requestFunctions: Array<() => Promise<T>>): Promise<T[]> {
     const results = requestFunctions.map((requestFunction) => this.enqueue(requestFunction));
     return Promise.all(results);
-  }
-
-  destroy() {
-    if (this.loggingInterval) {
-      clearInterval(this.loggingInterval);
-      this.loggingInterval = null;
-    }
   }
 }
 
