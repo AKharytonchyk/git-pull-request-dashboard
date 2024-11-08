@@ -71,7 +71,8 @@ export class GitService {
         repo,
         ref: `pull/${prNumber}/head`,
         filter: "latest",
-      })
+      }),
+      true
     );
   }
 
@@ -81,7 +82,8 @@ export class GitService {
         owner,
         repo,
         pull_number: prNumber,
-      })
+      }),
+      true
     );
     return mergeConflicts.data;
   }
@@ -92,7 +94,8 @@ export class GitService {
         owner,
         repo,
         pull_number: prNumber,
-      })
+      }),
+      true
     );
 
     if (

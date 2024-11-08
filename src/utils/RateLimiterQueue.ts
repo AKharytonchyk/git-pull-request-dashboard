@@ -15,9 +15,9 @@ class RateLimiterQueue {
     }, 60000);
   }
 
-  async enqueue<T>(requestFunction: () => Promise<T>): Promise<T> {
+  async enqueue<T>(requestFunction: () => Promise<T>, unshift = false): Promise<T> {
     return new Promise((resolve, reject) => {
-      this.queue.push(async () => {
+      const queueAction = async () => {
         try {
           this.activeRequests++;
           const result = await requestFunction();
@@ -29,7 +29,13 @@ class RateLimiterQueue {
           this.requestTimestamps.push(Date.now());
           this.processQueue();
         }
-      });
+      };
+
+      if (unshift) {
+        this.queue.unshift(queueAction);
+      } else {
+        this.queue.push(queueAction);
+      }
       this.processQueue();
     });
   }

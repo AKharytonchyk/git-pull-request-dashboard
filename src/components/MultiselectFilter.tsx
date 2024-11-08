@@ -9,6 +9,7 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import React from "react";
+import replaceEmoticons from "../utils/replaceEmoticons";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -60,7 +61,7 @@ export const MultiselectFilter: React.FC<MultiselectFilterProps> = ({
         renderValue={(selected) => (
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
             {selected.map((value) => (
-              <Chip key={value} label={value} size="small"/>
+              <Chip key={value} label={replaceEmoticons(value)} size="small"/>
             ))}
           </Box>
         )}
@@ -68,7 +69,7 @@ export const MultiselectFilter: React.FC<MultiselectFilterProps> = ({
       >
         {options.map((option) => (
           <MenuItem key={option} value={option}>
-            {option}
+            {replaceEmoticons(option)}
           </MenuItem>
         ))}
       </Select>
