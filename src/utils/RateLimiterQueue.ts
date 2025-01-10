@@ -69,7 +69,7 @@ class RateLimiterQueue {
 }
 
 const rateLimiter = new RateLimiterQueue(
-  isNaN(Number(process.env.MAX_REQUESTS_PER_MINUTE)) ? 200 : Number(process.env.MAX_REQUESTS_PER_MINUTE)
+  isNaN(Number((import.meta as any).env.VITE_MAX_REQUESTS_PER_MINUTE)) ? 200 : Number((import.meta as any).env.VITE_MAX_REQUESTS_PER_MINUTE)
 );
 
 export default rateLimiter;

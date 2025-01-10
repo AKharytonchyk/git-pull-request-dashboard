@@ -33,8 +33,9 @@ export class GitService {
 
   async getRepos(owner: string) {
     const repos = await rateLimiter.enqueue(() =>
-      this.octokit.paginate(this.octokit.repos.listForUser, {
-        username: owner,
+      this.octokit.paginate(this.octokit.repos.listForOrg, {
+        org: owner,
+        type: "all",
         per_page: 100,
         timeout: 5000,
       })
