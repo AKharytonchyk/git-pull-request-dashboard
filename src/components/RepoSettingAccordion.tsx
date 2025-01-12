@@ -8,6 +8,7 @@ import {
   Button,
   ButtonGroup,
   Input,
+  LinearProgress,
   List,
   ListItem,
   Typography,
@@ -33,6 +34,7 @@ export const RepoSettingAccordion: React.FC<RepoSettingAccordionProps> = ({
   const { octokit, handleRepositorySelect, repositorySettings } =
     React.useContext(ConfigContext);
   const [selectedRepos, setSelectedRepos] = React.useState<Repository[]>([]);
+  const [expanded, setExpanded] = React.useState<boolean>(false);
 
   const { isLoading, data: repos = [] } = useQuery({
     queryKey: ["repos", org?.login, type],
@@ -53,7 +55,7 @@ export const RepoSettingAccordion: React.FC<RepoSettingAccordionProps> = ({
       setSelectedRepos(fetchedRepos);
       return fetchedRepos;
     },
-    enabled: !!octokit,
+    enabled: !!octokit && expanded,
   });
 
   const repoList = useMemo(
@@ -102,9 +104,13 @@ export const RepoSettingAccordion: React.FC<RepoSettingAccordionProps> = ({
     }
   }, [org, type]);
 
+  const onChange = React.useCallback((_: any, opened: boolean) => {
+    setExpanded(opened);
+  }, [setExpanded]);
+
   return (
     <ListItem>
-      <Accordion sx={{ width: "100%", minWidth: "550px" }}>
+      <Accordion sx={{ width: "100%", minWidth: "550px" }} onChange={onChange}>
         <AccordionSummary expandIcon={<ExpandMore />}>{title}</AccordionSummary>
         <AccordionActions>
           <Input
@@ -126,7 +132,7 @@ export const RepoSettingAccordion: React.FC<RepoSettingAccordionProps> = ({
           </ButtonGroup>
         </AccordionActions>
         <AccordionDetails>
-          {isLoading && <Typography>Loading...</Typography>}
+          {isLoading && <LinearProgress /> }
           {!isLoading && repos.length === 0 && <Typography>No Repositories</Typography>}
           {!isLoading && repos.length > 0 && <List>{repoList}</List>}
         </AccordionDetails>
