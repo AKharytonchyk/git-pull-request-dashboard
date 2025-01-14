@@ -11,4 +11,4 @@ export type Organization = {
   public_members_url: string;
   avatar_url: string;
   description: string | null;
-}
+};

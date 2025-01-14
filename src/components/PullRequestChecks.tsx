@@ -40,8 +40,12 @@ export const PullRequestChecks: React.FC<PullRequestChecksProps> = ({
   });
 
   const allChecksPassed = React.useMemo(
-    () => checks.every((check) => check.conclusion === "success" || check.conclusion === "skipped"),
-    [checks]
+    () =>
+      checks.every(
+        (check) =>
+          check.conclusion === "success" || check.conclusion === "skipped",
+      ),
+    [checks],
   );
 
   return (

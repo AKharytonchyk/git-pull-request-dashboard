@@ -39,7 +39,7 @@ export const Coverage: React.FC = () => {
 
   const dataLength = React.useMemo(
     () => Object.keys(data || {}).length,
-    [data]
+    [data],
   );
 
   const { repositorySettings } = React.useContext(ConfigContext);

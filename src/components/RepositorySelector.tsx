@@ -15,7 +15,7 @@ export type RepositorySelectorProps = {
   repository: Repository;
 };
 
-const Action: React.FC<{onUndo: () => void}> = ({onUndo}) => (
+const Action: React.FC<{ onUndo: () => void }> = ({ onUndo }) => (
   <React.Fragment>
     <Button color="secondary" size="small" onClick={onUndo}>
       UNDO
@@ -34,7 +34,7 @@ export const RepositorySelector: React.FC<RepositorySelectorProps> = ({
   const handleSelect = React.useCallback(() => {
     handleRepositorySelect(
       repository.full_name,
-      !repositorySettings[repository.full_name]
+      !repositorySettings[repository.full_name],
     );
     setOpen(true);
   }, [handleRepositorySelect, repository, repositorySettings]);
@@ -42,7 +42,7 @@ export const RepositorySelector: React.FC<RepositorySelectorProps> = ({
   const handleUndo = React.useCallback(() => {
     handleRepositorySelect(
       repository.full_name,
-      !repositorySettings[repository.full_name]
+      !repositorySettings[repository.full_name],
     );
     setOpen(false);
   }, [handleRepositorySelect, repository, repositorySettings]);
@@ -56,19 +56,19 @@ export const RepositorySelector: React.FC<RepositorySelectorProps> = ({
   const message = React.useMemo(() => {
     return repositorySettings[repository.full_name] ? (
       <Typography>
-        Repository <strong>{repository.name.toUpperCase()}</strong> was moved to the top of the list
+        Repository <strong>{repository.name.toUpperCase()}</strong> was moved to
+        the top of the list
       </Typography>
     ) : (
       <Typography>
-        Repository <strong>{repository.name.toUpperCase()}</strong> was moved to the bottom of the list
+        Repository <strong>{repository.name.toUpperCase()}</strong> was moved to
+        the bottom of the list
       </Typography>
-    );} , [repository, repositorySettings]);
+    );
+  }, [repository, repositorySettings]);
 
   return (
-    <ListItemButton
-      key={repository.id}
-      onClick={handleSelect}
-    >
+    <ListItemButton key={repository.id} onClick={handleSelect}>
       <ListItemText primary={repository.full_name} />
       <ListItemIcon>
         {repositorySettings[repository.full_name] ? (

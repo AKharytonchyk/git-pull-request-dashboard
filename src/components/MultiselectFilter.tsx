@@ -3,13 +3,14 @@ import {
   InputLabel,
   Select,
   OutlinedInput,
-  Box,
-  Chip,
   MenuItem,
   SelectChangeEvent,
+  IconButton,
+  Chip,
 } from "@mui/material";
 import React from "react";
 import replaceEmoticons from "../utils/replaceEmoticons";
+import { Clear } from "@mui/icons-material";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -44,12 +45,22 @@ export const MultiselectFilter: React.FC<MultiselectFilterProps> = ({
     onChange(newValue);
   };
 
-  const id = React.useMemo(() => name.split(" ").join("-").toLowerCase(), [name]);
+  const handleClear = () => {
+    setSelectedOptions([]);
+    onChange([]);
+  };
+
+  const id = React.useMemo(
+    () => name.split(" ").join("-").toLowerCase(),
+    [name]
+  );
   const labelId = React.useMemo(() => `${id}-label`, [id]);
 
   return (
-    <FormControl sx={{ m: 1, minWidth: 300 }}>
-      <InputLabel id={labelId} size="small">{name}</InputLabel>
+    <FormControl sx={{ m: 1, width: 300 }}>
+      <InputLabel id={labelId} size="small">
+        {name}
+      </InputLabel>
       <Select
         labelId={labelId}
         id={id}
@@ -57,15 +68,27 @@ export const MultiselectFilter: React.FC<MultiselectFilterProps> = ({
         value={selectedOptions}
         onChange={handleChange}
         size="small"
-        input={<OutlinedInput size="small" id="select-multiple-chip" label="Chip" />}
-        renderValue={(selected) => (
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-            {selected.map((value) => (
-              <Chip key={value} label={replaceEmoticons(value)} size="small"/>
-            ))}
-          </Box>
-        )}
+        input={
+          <OutlinedInput size="small" id="select-multiple-chip" label="Chip" />
+        }
         MenuProps={MenuProps}
+        startAdornment={
+          selectedOptions.length > 1 ? (
+            <Chip
+              label={selectedOptions.length}
+              color="primary"
+              size="small"
+              sx={{ marginRight: 1 }}
+            />
+          ) : null
+        }
+        endAdornment={
+          selectedOptions.length > 0 ? (
+            <IconButton onClick={handleClear}>
+              <Clear />
+            </IconButton>
+          ) : null
+        }
       >
         {options.map((option) => (
           <MenuItem key={option} value={option}>

@@ -17,7 +17,7 @@ function TabPanel(props: {
   value: number;
 }) {
   const { children, value, index, ...other } = props;
-  
+
   return (
     <div
       role="tabpanel"
@@ -51,7 +51,16 @@ export default function LandingPage({ auth = false }) {
   };
 
   return (
-    <Container component="main" maxWidth="md" sx={{flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"calc(100vh - 100px)"}}>
+    <Container
+      component="main"
+      maxWidth="md"
+      sx={{
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "calc(100vh - 100px)",
+      }}
+    >
       <Paper elevation={3} sx={{ my: 4 }}>
         <AppBar position="static" color="default">
           <Tabs
@@ -87,8 +96,9 @@ export default function LandingPage({ auth = false }) {
               Welcome to the GitHub PR Dashboard
             </Typography>
             <Typography paragraph>
-              You are already authenticated with GitHub. However, you are either didn't configure projects
-              you want to monitor or this project do not have any opened pull requests.
+              You are already authenticated with GitHub. However, you are either
+              didn't configure projects you want to monitor or this project do
+              not have any opened pull requests.
             </Typography>
             <Typography paragraph>
               Please review the following guides to configure your dashboard.

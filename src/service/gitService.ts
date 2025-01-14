@@ -5,7 +5,9 @@ export class GitService {
   private readonly octokit: Octokit;
   constructor(baseUrl: string, token: string) {
     this.octokit = new Octokit({
-      baseUrl: !baseUrl.endsWith("/") ? baseUrl : baseUrl.substring(0, baseUrl.length - 1),
+      baseUrl: !baseUrl.endsWith("/")
+        ? baseUrl
+        : baseUrl.substring(0, baseUrl.length - 1),
       auth: token,
     });
   }
@@ -27,7 +29,7 @@ export class GitService {
 
   getOrganizations() {
     return rateLimiter.enqueue(() =>
-      this.octokit.orgs.listForAuthenticatedUser()
+      this.octokit.orgs.listForAuthenticatedUser(),
     );
   }
 
@@ -38,7 +40,7 @@ export class GitService {
         type: "all",
         per_page: 100,
         timeout: 5000,
-      })
+      }),
     );
 
     return repos
@@ -50,8 +52,8 @@ export class GitService {
     return rateLimiter.enqueue(() =>
       this.octokit.paginate(
         this.octokit.activity.listReposStarredByAuthenticatedUser,
-        { per_page: 100, timeout: 5000 }
-      )
+        { per_page: 100, timeout: 5000 },
+      ),
     );
   }
 
@@ -61,42 +63,45 @@ export class GitService {
         per_page: 100,
         timeout: 5000,
         type: "owner",
-      })
+      }),
     );
   }
 
   async getPRChecksStatus(owner: string, repo: string, prNumber: number) {
-    return rateLimiter.enqueue(() =>
-      this.octokit.checks.listForRef({
-        owner,
-        repo,
-        ref: `pull/${prNumber}/head`,
-        filter: "latest",
-      }),
-      true
+    return rateLimiter.enqueue(
+      () =>
+        this.octokit.checks.listForRef({
+          owner,
+          repo,
+          ref: `pull/${prNumber}/head`,
+          filter: "latest",
+        }),
+      true,
     );
   }
 
   async hasMergeConflict(owner: string, repo: string, prNumber: number) {
-    const mergeConflicts = await rateLimiter.enqueue(() =>
-      this.octokit.pulls.get({
-        owner,
-        repo,
-        pull_number: prNumber,
-      }),
-      true
+    const mergeConflicts = await rateLimiter.enqueue(
+      () =>
+        this.octokit.pulls.get({
+          owner,
+          repo,
+          pull_number: prNumber,
+        }),
+      true,
     );
     return mergeConflicts.data;
   }
 
   async getPRApprovals(owner: string, repo: string, prNumber: number) {
-    const reviews = await rateLimiter.enqueue(() =>
-      this.octokit.pulls.listReviews({
-        owner,
-        repo,
-        pull_number: prNumber,
-      }),
-      true
+    const reviews = await rateLimiter.enqueue(
+      () =>
+        this.octokit.pulls.listReviews({
+          owner,
+          repo,
+          pull_number: prNumber,
+        }),
+      true,
     );
 
     if (
@@ -108,16 +113,19 @@ export class GitService {
     }
 
     return Object.values(
-      reviews.data.reduce((acc: any, review: any) => {
-        if (
-          !acc[review.user.login] ||
-          new Date(acc[review.user.login].submitted_at) <
-            new Date(review.submitted_at)
-        ) {
-          acc[review.user.login] = review;
-        }
-        return acc;
-      }, {} as Record<string, any>)
+      reviews.data.reduce(
+        (acc: any, review: any) => {
+          if (
+            !acc[review.user.login] ||
+            new Date(acc[review.user.login].submitted_at) <
+              new Date(review.submitted_at)
+          ) {
+            acc[review.user.login] = review;
+          }
+          return acc;
+        },
+        {} as Record<string, any>,
+      ),
     );
   }
 }

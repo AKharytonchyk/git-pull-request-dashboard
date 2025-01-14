@@ -1,6 +1,10 @@
-import { useEffect, useState, useRef, RefObject } from 'react';
+import { useEffect, useState, useRef, RefObject } from "react";
 
-export const useOnScreen = (ref: RefObject<Element>, rootMargin = '0px', once: boolean = true) => {
+export const useOnScreen = (
+  ref: RefObject<Element>,
+  rootMargin = "0px",
+  once: boolean = true,
+) => {
   const observer = useRef<IntersectionObserver | null>(null);
   const [isIntersecting, setIntersecting] = useState(false);
 
@@ -14,7 +18,7 @@ export const useOnScreen = (ref: RefObject<Element>, rootMargin = '0px', once: b
       },
       {
         rootMargin,
-      }
+      },
     );
   }, [rootMargin, once]);
 
@@ -29,4 +33,4 @@ export const useOnScreen = (ref: RefObject<Element>, rootMargin = '0px', once: b
   }, [ref]);
 
   return isIntersecting;
-}
+};

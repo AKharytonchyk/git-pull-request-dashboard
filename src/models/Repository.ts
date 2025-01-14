@@ -5,4 +5,4 @@ export type Repository = {
   url: string;
   html_url: string;
   description: string | null;
-}
+};
