@@ -46,10 +46,10 @@ export const PullRequestFilters: React.FC<PullRequestFiltersProps> = ({
       });
 
       return {
-        authors: Array.from(data.authors),
-        reviewers: Array.from(data.reviewers),
-        assignees: Array.from(data.assignees),
-        repositories: Array.from(data.repositories),
+        authors: Array.from(data.authors).sort(),
+        reviewers: Array.from(data.reviewers).sort(),
+        assignees: Array.from(data.assignees).sort(),
+        repositories: Array.from(data.repositories).sort(),
         labels: Array.from(data.labels),
         titles: Array.from(data.title),
         includeLabels: [],
