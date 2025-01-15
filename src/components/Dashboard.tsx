@@ -89,7 +89,11 @@ export const Dashboard: React.FC = () => {
               width={"100%"}
               alignItems={"center"}
             >
-              <InputFilter name="Filter" onChange={setFilter} size="small" />
+              <InputFilter
+                name="Title Search"
+                onChange={setFilter}
+                size="small"
+              />
               <FormGroup sx={{ m: 1 }}>
                 <FormControlLabel
                   control={
