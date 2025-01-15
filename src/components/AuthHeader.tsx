@@ -4,6 +4,8 @@ import BottomNavigation from "@mui/material/BottomNavigation";
 import BottomNavigationAction from "@mui/material/BottomNavigationAction";
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { PullRequestIcon } from "./icons/PullRequestIcon";
+import { RepositoryIcon } from "./icons/RepositoryIcon";
 
 export type AuthHeaderProps = {
   user: {
@@ -43,6 +45,21 @@ export const AuthHeader: React.FC<AuthHeaderProps> = ({
           sx={{ backgroundColor: "#f5f5f5" }}
           value="/"
           title="Dashboard"
+        />
+        <BottomNavigationAction
+          label="My PRs"
+          icon={<PullRequestIcon />}
+          sx={{ backgroundColor: "#f5f5f5" }}
+          value="/my-pull-requests"
+          title="My PRs"
+        />
+
+        <BottomNavigationAction
+          label="Repositories"
+          icon={<RepositoryIcon />}
+          sx={{ backgroundColor: "#f5f5f5" }}
+          value="/repositories"
+          title="Repositories"
         />
         <BottomNavigationAction
           label="Coverage"

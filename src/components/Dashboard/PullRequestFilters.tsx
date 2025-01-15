@@ -124,24 +124,22 @@ export const PullRequestFilters: React.FC<PullRequestFiltersProps> = ({
     {
       name: "Authors",
       options: authors,
-      setSelected: (authors: string[]) => onFilterChange("authors", authors),
+      onChange: (authors: string[]) => onFilterChange("authors", authors),
     },
     {
       name: "Reviewers",
       options: reviewers,
-      setSelected: (reviewers: string[]) =>
-        onFilterChange("reviewers", reviewers),
+      onChange: (reviewers: string[]) => onFilterChange("reviewers", reviewers),
     },
     {
       name: "Assignees",
       options: assignees,
-      setSelected: (assignees: string[]) =>
-        onFilterChange("assignees", assignees),
+      onChange: (assignees: string[]) => onFilterChange("assignees", assignees),
     },
     {
       name: "Repositories",
       options: repositories,
-      setSelected: (repositories: string[]) =>
+      onChange: (repositories: string[]) =>
         onFilterChange("repositories", repositories),
     },
     {
@@ -149,7 +147,7 @@ export const PullRequestFilters: React.FC<PullRequestFiltersProps> = ({
       options: labels.filter(
         (label) => !filterValues.excludeLabels.includes(label)
       ),
-      setSelected: (includeLabels: string[]) =>
+      onChange: (includeLabels: string[]) =>
         onFilterChange("includeLabels", includeLabels),
     },
     {
@@ -157,7 +155,7 @@ export const PullRequestFilters: React.FC<PullRequestFiltersProps> = ({
       options: labels.filter(
         (label) => !filterValues.includeLabels.includes(label)
       ),
-      setSelected: (excludeLabels: string[]) =>
+      onChange: (excludeLabels: string[]) =>
         onFilterChange("excludeLabels", excludeLabels),
     },
   ];
@@ -165,12 +163,7 @@ export const PullRequestFilters: React.FC<PullRequestFiltersProps> = ({
   return (
     <Box>
       {multiselectFIlterOptions.map((filter) => (
-        <MultiselectFilter
-          key={filter.name}
-          name={filter.name}
-          options={filter.options}
-          onChange={filter.setSelected}
-        />
+        <MultiselectFilter key={filter.name} {...filter} />
       ))}
     </Box>
   );

@@ -11,7 +11,7 @@ import {
 import PATSetupGuide from "../components/PATSetupGuide";
 import RepositorySetupGuide from "../components/RepositorySetupGuide";
 
-function TabPanel(props: {
+export function TabPanel(props: {
   children?: React.ReactNode;
   index: number;
   value: number;
@@ -79,14 +79,14 @@ export default function LandingPage({ auth = false }) {
             <Typography variant="h6" gutterBottom>
               Welcome to the GitHub PR Dashboard
             </Typography>
-            <Typography paragraph>
+            <Typography component="p">
               This tool helps you to effortlessly monitor pull requests across
               all your GitHub repositories in one unified dashboard. Ideal for
               developers who contribute to or manage multiple projects, it
               simplifies staying on top of your PRs without the need to switch
               between repositories.
             </Typography>
-            <Typography paragraph>
+            <Typography component="p">
               Ready to simplify your GitHub workflow? Let's get started.
             </Typography>
           </TabPanel>
@@ -95,12 +95,12 @@ export default function LandingPage({ auth = false }) {
             <Typography variant="h6" gutterBottom>
               Welcome to the GitHub PR Dashboard
             </Typography>
-            <Typography paragraph>
+            <Typography component="p">
               You are already authenticated with GitHub. However, you are either
               didn't configure projects you want to monitor or this project do
               not have any opened pull requests.
             </Typography>
-            <Typography paragraph>
+            <Typography component="p">
               Please review the following guides to configure your dashboard.
             </Typography>
           </TabPanel>

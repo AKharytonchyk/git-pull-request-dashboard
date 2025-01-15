@@ -14,7 +14,7 @@ const Outline: React.FC<{ text: string }> = ({ text }) => {
 const PATSetupGuide = () => {
   return (
     <>
-      <Typography paragraph>
+      <Typography component="p">
         To be able to see pull request you would need to pick the project first.
         Follow these steps to configure your projects:
       </Typography>
@@ -42,7 +42,7 @@ const PATSetupGuide = () => {
         <Typography variant="body1" component="div">
           7. When finished just click outside the dialog to close it.
         </Typography>
-        <Typography paragraph sx={{ marginTop: 2 }}>
+        <Typography component="p" sx={{ marginTop: 2 }}>
           All the selection would be saved automatically in your browser. As
           soon as you select the repositories you would be able to see the pull
           requests if any are available.

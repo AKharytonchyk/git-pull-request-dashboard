@@ -9,7 +9,6 @@ import {
   Box,
   Tooltip,
 } from "@mui/material";
-import { green, red, amber } from "@mui/material/colors";
 import { PullRequest } from "../models/PullRequest";
 import {
   DesignServices,
@@ -23,23 +22,13 @@ import { PullRequestsApprovals } from "./PullRequestsApprovals";
 import { PullRequestMergeCheck } from "./PullRequestMergeCheck";
 import getContrastColor from "../utils/getContractColor";
 import replaceEmoticons from "../utils/replaceEmoticons";
+import { getColorForDaysInReview } from "../utils/getColorsForDaysInReview";
 
 interface PullRequestCardProps {
   pr: PullRequest;
 }
 
 const PullRequestCard: React.FC<PullRequestCardProps> = ({ pr }) => {
-  const getColorForDaysInReview = (createdAt: Date) => {
-    const today = new Date();
-    const daysInReview = Math.floor(
-      (today.getTime() - new Date(createdAt).getTime()) / (1000 * 3600 * 24),
-    );
-
-    if (daysInReview < 3) return green[500];
-    if (daysInReview < 7) return amber[500];
-    return red[500];
-  };
-
   return (
     <Card sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <CardActions
@@ -124,7 +113,7 @@ const PullRequestCard: React.FC<PullRequestCardProps> = ({ pr }) => {
             <Chip
               label={Math.floor(
                 (new Date().getTime() - new Date(pr.created_at).getTime()) /
-                  (1000 * 3600 * 24),
+                  (1000 * 3600 * 24)
               )}
               sx={{ bgcolor: getColorForDaysInReview(pr.created_at) }}
               size="small"
