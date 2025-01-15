@@ -15,7 +15,10 @@ class RateLimiterQueue {
     }, 60000);
   }
 
-  async enqueue<T>(requestFunction: () => Promise<T>, unshift = false): Promise<T> {
+  async enqueue<T>(
+    requestFunction: () => Promise<T>,
+    unshift = false,
+  ): Promise<T> {
     return new Promise((resolve, reject) => {
       const queueAction = async () => {
         try {
@@ -59,17 +62,23 @@ class RateLimiterQueue {
 
   private cleanupOldTimestamps() {
     const oneMinuteAgo = Date.now() - 60000;
-    this.requestTimestamps = this.requestTimestamps.filter(timestamp => timestamp > oneMinuteAgo);
+    this.requestTimestamps = this.requestTimestamps.filter(
+      (timestamp) => timestamp > oneMinuteAgo,
+    );
   }
 
   async processAll<T>(requestFunctions: Array<() => Promise<T>>): Promise<T[]> {
-    const results = requestFunctions.map((requestFunction) => this.enqueue(requestFunction));
+    const results = requestFunctions.map((requestFunction) =>
+      this.enqueue(requestFunction),
+    );
     return Promise.all(results);
   }
 }
 
 const rateLimiter = new RateLimiterQueue(
-  isNaN(Number((import.meta as any).env.VITE_MAX_REQUESTS_PER_MINUTE)) ? 200 : Number((import.meta as any).env.VITE_MAX_REQUESTS_PER_MINUTE)
+  isNaN(Number((import.meta as any).env.VITE_MAX_REQUESTS_PER_MINUTE))
+    ? 200
+    : Number((import.meta as any).env.VITE_MAX_REQUESTS_PER_MINUTE),
 );
 
 export default rateLimiter;

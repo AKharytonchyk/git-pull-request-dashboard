@@ -4,7 +4,6 @@ import { ConfigContext } from "../App";
 import { Box, Avatar } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 
-
 export const UserTitle: React.FC = () => {
   const { octokit } = React.useContext(ConfigContext);
 
@@ -18,8 +17,12 @@ export const UserTitle: React.FC = () => {
     enabled: !!octokit,
   });
 
-  return user ? (<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-    <Avatar alt={user?.login} src={user?.avatar_url} sx={{ mr: 2 }} />
-    <div>{user?.login}</div>
-  </Box>) : <></>;
+  return user ? (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+      <Avatar alt={user?.login} src={user?.avatar_url} sx={{ mr: 2 }} />
+      <div>{user?.login}</div>
+    </Box>
+  ) : (
+    <></>
+  );
 };

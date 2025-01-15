@@ -24,7 +24,7 @@ const ErrorMessage: React.FC<{ showError: boolean }> = ({ showError }) => {
               // Additional repositories can follow the same structure
             },
             null,
-            2
+            2,
           )}
         </pre>
         To generate this file, add the following configuration to your Jest

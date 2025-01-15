@@ -9,7 +9,7 @@ export const CoverageCell: React.FC<{ coverage: number; previous: number }> = ({
 }) => {
   const icon = React.useMemo(
     () => CoverageDiffIcon(coverage - previous, previous),
-    [coverage, previous]
+    [coverage, previous],
   );
 
   const styles = React.useMemo(() => RYGGradient(coverage), [coverage]);

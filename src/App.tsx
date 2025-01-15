@@ -12,8 +12,12 @@ export const ConfigContext = React.createContext<{
   repositorySettings: Record<string, boolean>;
   handleRepositorySelect: (repository: string, selected: boolean) => void;
   saveRawSettings: (settings: Record<string, boolean> | undefined) => void;
-}>({ octokit: null, repositorySettings: {}, handleRepositorySelect: () => { }, saveRawSettings: () => { } });
-
+}>({
+  octokit: null,
+  repositorySettings: {},
+  handleRepositorySelect: () => {},
+  saveRawSettings: () => {},
+});
 
 function App() {
   const [user, setUser] = React.useState<{
@@ -29,8 +33,9 @@ function App() {
   const onLogin = React.useCallback(() => {
     if (token) {
       const octoKit = new GitService(
-        (import.meta as any).env.VITE_GITHUB_API_URL || "https://api.github.com",
-        token
+        (import.meta as any).env.VITE_GITHUB_API_URL ||
+          "https://api.github.com",
+        token,
       );
       octoKit.testAuthentication().then((user) => {
         if (user.status !== 200) {
@@ -55,9 +60,10 @@ function App() {
     if (localStorage.getItem("token")) {
       setOctokit(
         new GitService(
-          (import.meta as any).env.VITE_GITHUB_API_URL || "https://api.github.com",
-          localStorage.getItem("token") || ""
-        )
+          (import.meta as any).env.VITE_GITHUB_API_URL ||
+            "https://api.github.com",
+          localStorage.getItem("token") || "",
+        ),
       );
     }
   }, []);
@@ -82,19 +88,22 @@ function App() {
         return newState;
       });
     },
-    []
+    [],
   );
 
-  const saveRawSettings = React.useCallback((settings: Record<string, boolean> | undefined) => {
-    if (!settings) return;
+  const saveRawSettings = React.useCallback(
+    (settings: Record<string, boolean> | undefined) => {
+      if (!settings) return;
 
-    setRepositorySettings(settings);
-    localStorage.setItem("REPOSITORY_CONFIG", JSON.stringify(settings));
-  }, []);
+      setRepositorySettings(settings);
+      localStorage.setItem("REPOSITORY_CONFIG", JSON.stringify(settings));
+    },
+    [],
+  );
 
   React.useEffect(() => {
     const repositoryConfig = JSON.parse(
-      localStorage.getItem("REPOSITORY_CONFIG") ?? "{}"
+      localStorage.getItem("REPOSITORY_CONFIG") ?? "{}",
     );
     setRepositorySettings(repositoryConfig);
   }, []);
@@ -102,7 +111,12 @@ function App() {
   return (
     <>
       <ConfigContext.Provider
-        value={{ octokit, repositorySettings, handleRepositorySelect, saveRawSettings }}
+        value={{
+          octokit,
+          repositorySettings,
+          handleRepositorySelect,
+          saveRawSettings,
+        }}
       >
         <AppBar
           position="static"

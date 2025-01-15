@@ -72,7 +72,7 @@ export const RepoSettingAccordion: React.FC<RepoSettingAccordionProps> = ({
           return a.full_name.localeCompare(b.full_name);
         })
         .map((repo) => <RepositorySelector key={repo.id} repository={repo} />),
-    [selectedRepos, repositorySettings]
+    [selectedRepos, repositorySettings],
   );
 
   const handleSelectAll = React.useCallback(() => {
@@ -90,7 +90,7 @@ export const RepoSettingAccordion: React.FC<RepoSettingAccordionProps> = ({
       const filter = event.target.value;
       setSelectedRepos(repos.filter((repo) => repo.full_name.includes(filter)));
     },
-    [repos]
+    [repos],
   );
 
   const title = React.useMemo(() => {
@@ -104,9 +104,12 @@ export const RepoSettingAccordion: React.FC<RepoSettingAccordionProps> = ({
     }
   }, [org, type]);
 
-  const onChange = React.useCallback((_: any, opened: boolean) => {
-    setExpanded(opened);
-  }, [setExpanded]);
+  const onChange = React.useCallback(
+    (_: any, opened: boolean) => {
+      setExpanded(opened);
+    },
+    [setExpanded],
+  );
 
   return (
     <ListItem>
@@ -132,8 +135,10 @@ export const RepoSettingAccordion: React.FC<RepoSettingAccordionProps> = ({
           </ButtonGroup>
         </AccordionActions>
         <AccordionDetails>
-          {isLoading && <LinearProgress /> }
-          {!isLoading && repos.length === 0 && <Typography>No Repositories</Typography>}
+          {isLoading && <LinearProgress />}
+          {!isLoading && repos.length === 0 && (
+            <Typography>No Repositories</Typography>
+          )}
           {!isLoading && repos.length > 0 && <List>{repoList}</List>}
         </AccordionDetails>
       </Accordion>

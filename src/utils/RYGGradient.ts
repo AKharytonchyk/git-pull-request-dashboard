@@ -41,5 +41,3 @@ const RYGGradient = (coverage: number): StyleProps => {
 };
 
 export default RYGGradient;
-
-

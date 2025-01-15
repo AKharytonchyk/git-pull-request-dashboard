@@ -42,7 +42,7 @@ export const useFilterParams = () => {
 
       setSearchParams(newSearchParams);
     },
-    [searchParams, setSearchParams]
+    [searchParams, setSearchParams],
   );
 
   return {

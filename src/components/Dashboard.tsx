@@ -2,14 +2,22 @@ import React, { useEffect } from "react";
 import { ConfigContext } from "../App";
 import { PullRequest } from "../models/PullRequest";
 import PullRequestCard from "./PullRequestCard";
-import { Box } from "@mui/material";
+import {
+  Box,
+  Button,
+  FormControlLabel,
+  FormGroup,
+  Switch,
+  Tooltip,
+} from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import LandingPage from "../pages/LandingPage";
-import { MultiselectFilter } from "./MultiselectFilter";
 import { InputFilter } from "./InputFilter";
 import { useQueries } from "@tanstack/react-query";
 import { Navigate } from "react-router-dom";
 import PRLoadingPage from "../pages/PRLoadingPage";
+import { PullRequestFilters } from "./Dashboard/PullRequestFilters";
+import { FilterList } from "@mui/icons-material";
 
 export const Dashboard: React.FC = () => {
   const { octokit, repositorySettings } = React.useContext(ConfigContext);
@@ -37,55 +45,32 @@ export const Dashboard: React.FC = () => {
     })),
     combine: (results) => {
       return {
-        data: results.map((result) => result.data ?? [] as PullRequest[]).flat(),
+        data: results
+          .map((result) => result.data ?? ([] as PullRequest[]))
+          .flat(),
         pending: results.some((result) => result.isLoading),
       };
     },
   });
 
   const [filter, setFilter] = React.useState<string>("");
-  const [includeLabels, setIncludeLabels] = React.useState<string[]>([]);
-  const [excludeLabels, setExcludeLabels] = React.useState<string[]>([]);
-  const labels: string[] = React.useMemo(
-    () =>
-      Array.from(
-        new Set(
-          data
-            .filter((pull) => pull !== undefined)
-            .map((pull) => pull!.labels.map(({ name }) => name))
-            .flat()
-        )
-      ),
-    [data]
-  );
+  const [showDrafts, setShowDrafts] = React.useState<boolean>(false);
+  const [showFilters, setShowFilters] = React.useState<boolean>(false);
 
   const filteredPulls = React.useMemo(() => {
     return data.filter((pull) => {
       if (!pull) return false;
-      if (
-        includeLabels.length > 0 &&
-        !pull.labels.some(({ name }) => includeLabels.includes(name))
-      )
-        return false;
-      if (
-        excludeLabels.length > 0 &&
-        pull.labels.some(({ name }) => excludeLabels.includes(name))
-      )
-        return false;
-      if (
-        filter.length > 0 &&
-        !pull.user?.login
-          .toLocaleLowerCase()
-          .includes(filter.toLocaleLowerCase()) &&
-        !pull.head.repo.full_name
-          .toLocaleLowerCase()
-          .includes(filter.toLocaleLowerCase())
-      )
+      if (!showDrafts && pull.draft) return false;
+      if (!pull.title.toLowerCase().includes(filter.toLowerCase()))
         return false;
 
       return true;
     });
-  }, [data, filter, includeLabels, excludeLabels]);
+  }, [data, filter, showDrafts]);
+
+  const [displayedPulls, setDisplayedPulls] = React.useState<PullRequest[]>(
+    filteredPulls as PullRequest[]
+  );
 
   if (!localStorage.getItem("token")) {
     return <Navigate to="/login" />;
@@ -98,23 +83,47 @@ export const Dashboard: React.FC = () => {
       {data.length > 0 && (
         <>
           <Box>
-            <InputFilter name="Filter" onChange={setFilter} size="small" />
-            <MultiselectFilter
-              options={labels.filter((label) => !excludeLabels.includes(label))}
-              name="Include labels"
-              onChange={setIncludeLabels}
-            />
-            <MultiselectFilter
-              options={labels.filter((label) => !includeLabels.includes(label))}
-              name="Exclude labels"
-              onChange={setExcludeLabels}
-            />
+            <Box
+              display="flex"
+              justifyContent="start"
+              width={"100%"}
+              alignItems={"center"}
+            >
+              <InputFilter name="Filter" onChange={setFilter} size="small" />
+              <FormGroup sx={{ m: 1 }}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={showDrafts}
+                      onChange={() => setShowDrafts(!showDrafts)}
+                    />
+                  }
+                  label="Show Drafts"
+                />
+              </FormGroup>
+              <Tooltip title={showFilters ? "Hide Filters" : "Show Filters"}>
+                <Button
+                  variant="contained"
+                  sx={{ ml: 1, marginLeft: "auto", height: 32 }}
+                  size="small"
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  <FilterList />
+                </Button>
+              </Tooltip>
+            </Box>
+            <Box display={showFilters ? "block" : "none"}>
+              <PullRequestFilters
+                pullRequests={filteredPulls as PullRequest[]}
+                onChange={setDisplayedPulls}
+              />
+            </Box>
           </Box>
           <Grid container spacing={2}>
-            {filteredPulls.map(
+            {displayedPulls.map(
               (pull) =>
                 pull && (
-                  <Grid key={pull.id} size={{xl: 6, xs:12 }}>
+                  <Grid key={pull.id} size={{ xl: 6, xs: 12 }}>
                     <PullRequestCard pr={pull as unknown as PullRequest} />
                   </Grid>
                 )

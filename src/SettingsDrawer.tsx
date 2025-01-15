@@ -28,9 +28,13 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
 
   const [showRawSettings, setShowRawSettings] = React.useState(false);
 
-  const orgList = React.useMemo(() => orgs.map((org) => (
-    <RepoSettingAccordion key={org.id} org={org} type="org" />
-  )), [orgs]);
+  const orgList = React.useMemo(
+    () =>
+      orgs.map((org) => (
+        <RepoSettingAccordion key={org.id} org={org} type="org" />
+      )),
+    [orgs],
+  );
 
   const handleClose = React.useCallback(() => {
     setShowRawSettings(false);
@@ -39,8 +43,8 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
 
   return (
     <Drawer anchor="left" open={opened} onClose={handleClose}>
-      <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
-        <Typography variant="h5" sx={{ m: 3, mr: 'auto' }}>
+      <Box sx={{ display: "flex", alignItems: "center", mr: 2 }}>
+        <Typography variant="h5" sx={{ m: 3, mr: "auto" }}>
           Organizations:
         </Typography>
         <Typography variant="body1" sx={{ m: 3 }}>
@@ -50,7 +54,9 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
       </Box>
       <Box sx={{ minWidth: 600, mr: 2, gap: 2 }}>
         <ExportSettings isOpen={showRawSettings} />
-        <List sx={{ mr: 2, gap: 2, display: showRawSettings ? 'none' : 'block' }}>
+        <List
+          sx={{ mr: 2, gap: 2, display: showRawSettings ? "none" : "block" }}
+        >
           <RepoSettingAccordion type="user" />
           <RepoSettingAccordion type="starred" />
           {orgList}
