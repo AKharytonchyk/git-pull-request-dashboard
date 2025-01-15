@@ -4,7 +4,7 @@ import { Typography, Box } from "@mui/material";
 const PATSetupGuide = () => {
   return (
     <>
-      <Typography paragraph>
+      <Typography component="p">
         A Personal Access Token (PAT) on GitHub allows third-party applications
         to interact with your GitHub account securely. Follow these steps to
         create a PAT:
@@ -35,7 +35,7 @@ const PATSetupGuide = () => {
         <Typography variant="body1" component="div">
           7. Click <strong>Generate token</strong>.
         </Typography>
-        <Typography paragraph>
+        <Typography component="p">
           After clicking <strong>Generate token</strong>, make sure to copy your
           new personal access token. You won’t be able to see it again!
         </Typography>

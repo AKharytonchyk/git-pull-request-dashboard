@@ -9,6 +9,8 @@ import { ScopedCssBaseline } from "@mui/material";
 import Coverage from "./pages/Coverage";
 import LandingPage from "./pages/LandingPage";
 import Dashboard from "./components/Dashboard";
+import { MyPullRequests } from "./pages/MyPullRequests";
+import { RepositoriesPage } from "./pages/RepositoriesPage";
 
 const router = createHashRouter([
   {
@@ -27,6 +29,14 @@ const router = createHashRouter([
         path: "/coverage",
         element: <Coverage />,
       },
+      {
+        path: "/my-pull-requests",
+        element: <MyPullRequests />,
+      },
+      {
+        path: "/repositories",
+        element: <RepositoriesPage />,
+      },
     ],
   },
 ]);
@@ -34,7 +44,7 @@ const router = createHashRouter([
 const queryClient = new QueryClient();
 
 const root = ReactDOM.createRoot(
-  document.getElementById("root") as HTMLElement,
+  document.getElementById("root") as HTMLElement
 );
 root.render(
   <React.StrictMode>
@@ -43,7 +53,7 @@ root.render(
         <RouterProvider router={router} />
       </ScopedCssBaseline>
     </QueryClientProvider>
-  </React.StrictMode>,
+  </React.StrictMode>
 );
 
 // If you want to start measuring performance in your app, pass a function

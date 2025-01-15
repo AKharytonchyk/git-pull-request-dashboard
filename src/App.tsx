@@ -12,6 +12,7 @@ export const ConfigContext = React.createContext<{
   repositorySettings: Record<string, boolean>;
   handleRepositorySelect: (repository: string, selected: boolean) => void;
   saveRawSettings: (settings: Record<string, boolean> | undefined) => void;
+  user?: { login: string; avatar_url: string; url: string };
 }>({
   octokit: null,
   repositorySettings: {},
@@ -35,7 +36,7 @@ function App() {
       const octoKit = new GitService(
         (import.meta as any).env.VITE_GITHUB_API_URL ||
           "https://api.github.com",
-        token,
+        token
       );
       octoKit.testAuthentication().then((user) => {
         if (user.status !== 200) {
@@ -62,8 +63,8 @@ function App() {
         new GitService(
           (import.meta as any).env.VITE_GITHUB_API_URL ||
             "https://api.github.com",
-          localStorage.getItem("token") || "",
-        ),
+          localStorage.getItem("token") || ""
+        )
       );
     }
   }, []);
@@ -88,7 +89,7 @@ function App() {
         return newState;
       });
     },
-    [],
+    []
   );
 
   const saveRawSettings = React.useCallback(
@@ -98,12 +99,12 @@ function App() {
       setRepositorySettings(settings);
       localStorage.setItem("REPOSITORY_CONFIG", JSON.stringify(settings));
     },
-    [],
+    []
   );
 
   React.useEffect(() => {
     const repositoryConfig = JSON.parse(
-      localStorage.getItem("REPOSITORY_CONFIG") ?? "{}",
+      localStorage.getItem("REPOSITORY_CONFIG") ?? "{}"
     );
     setRepositorySettings(repositoryConfig);
   }, []);
@@ -116,6 +117,7 @@ function App() {
           repositorySettings,
           handleRepositorySelect,
           saveRawSettings,
+          user,
         }}
       >
         <AppBar
