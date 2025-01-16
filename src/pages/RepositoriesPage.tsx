@@ -44,10 +44,10 @@ export const RepositoriesPage: React.FC = () => {
           .map((pr) => ({ ...pr, created_at: new Date(pr.created_at) }))
           .reduce(
             (acc, pr) => {
-              if (acc[pr.head.repo?.full_name || "Unknown"]) {
-                acc[pr.head.repo.full_name].push(pr as PullRequest);
+              if (acc[pr.base.repo?.full_name || "Unknown"]) {
+                acc[pr.base.repo.full_name].push(pr as PullRequest);
               } else {
-                acc[pr.head.repo.full_name] = [pr as PullRequest];
+                acc[pr.base.repo?.full_name] = [pr as PullRequest];
               }
               return acc;
             },
