@@ -93,7 +93,7 @@ export const PullRequestFilters: React.FC<PullRequestFiltersProps> = ({
         return false;
       if (
         filterValues.repositories.length > 0 &&
-        !filterValues.repositories.includes(pr.base.repo.full_name)
+        !filterValues.repositories.includes(pr.base.repo?.full_name || "")
       )
         return false;
       if (

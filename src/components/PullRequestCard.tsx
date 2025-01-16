@@ -42,7 +42,7 @@ const PullRequestCard: React.FC<PullRequestCardProps> = ({ pr }) => {
       >
         <Chip
           icon={<GitHub />}
-          label={pr.base.repo.full_name}
+          label={pr.base.repo?.full_name || "Unknown"}
           size="small"
           sx={{ marginRight: "auto" }}
         />

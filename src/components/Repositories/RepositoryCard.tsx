@@ -58,7 +58,7 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ pulls }) => {
           }}
         >
           <LanguageIcon language={repo.language} />
-          <Typography variant="h6">{repo.full_name}</Typography>
+          <Typography variant="h6">{repo?.full_name || "Unknown"}</Typography>
         </Box>
         <Box
           sx={{

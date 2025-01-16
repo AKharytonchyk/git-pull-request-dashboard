@@ -45,9 +45,11 @@ export const RepositoriesPage: React.FC = () => {
           .reduce(
             (acc, pr) => {
               if (acc[pr.base.repo?.full_name || "Unknown"]) {
-                acc[pr.base.repo.full_name].push(pr as PullRequest);
+                acc[pr.base.repo?.full_name || "Unknown"].push(
+                  pr as PullRequest
+                );
               } else {
-                acc[pr.base.repo?.full_name] = [pr as PullRequest];
+                acc[pr.base.repo?.full_name || "Unknown"] = [pr as PullRequest];
               }
               return acc;
             },
