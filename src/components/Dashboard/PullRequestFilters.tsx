@@ -40,7 +40,7 @@ export const PullRequestFilters: React.FC<PullRequestFiltersProps> = ({
         pr.requested_reviewers.forEach((r) => data.reviewers.add(r.login));
         if (pr.assignee) data.assignees.add((pr.assignee as any).login);
         pr.assignees?.forEach((a) => data.assignees.add(a.login));
-        if (pr.head.repo) data.repositories.add(pr.head.repo.full_name);
+        if (pr.base.repo) data.repositories.add(pr.base.repo.full_name);
         pr.labels.forEach((l) => data.labels.add(l.name));
         data.title.add(pr.title);
       });
@@ -93,7 +93,7 @@ export const PullRequestFilters: React.FC<PullRequestFiltersProps> = ({
         return false;
       if (
         filterValues.repositories.length > 0 &&
-        !filterValues.repositories.includes(pr.head.repo.full_name)
+        !filterValues.repositories.includes(pr.base.repo.full_name)
       )
         return false;
       if (
