@@ -44,6 +44,16 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
     enabled: octokit !== undefined && name !== undefined,
   });
 
+  const { data: repoData } = useQuery({
+    queryKey: ["repo", name],
+    queryFn: async () => {
+      if (octokit) {
+        return octokit.getRepository(name);
+      }
+    },
+    enabled: octokit !== undefined && name !== undefined,
+  });
+
   const oldestPr = useMemo(() => {
     return pulls?.sort(
       (prA, prB) => prA.created_at.getTime() - prB.created_at.getTime()
@@ -94,8 +104,8 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
             pb: 2,
           }}
         >
-          <LanguageIcon language={repo?.language} />
-          <Typography variant="h6">{repo?.full_name || "Unknown"}</Typography>
+          <LanguageIcon language={repoData?.language} />
+          <Typography variant="h6">{name}</Typography>
         </Box>
         <Stack direction="row" justifyContent={"space-between"}>
           <Stack direction="row" alignItems={"center"}>

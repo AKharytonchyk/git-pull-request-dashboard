@@ -62,6 +62,15 @@ export class GitService {
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
+  async getRepository(fullName: string) {
+    const [owner, name] = fullName.split("/");
+    const response = await rateLimiter.enqueue(() =>
+      this.octokit.repos.get({ owner, repo: name })
+    );
+
+    return response.data;
+  }
+
   async getStaredRepos() {
     return rateLimiter.enqueue(() =>
       this.octokit.paginate(
