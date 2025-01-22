@@ -9,15 +9,12 @@ import {
   Box,
   Tooltip,
 } from "@mui/material";
-import {
-  GitHub,
-  Visibility,
-} from "@mui/icons-material";
+import { GitHub, Visibility } from "@mui/icons-material";
 
 export interface IssueCardProps {
   title: string;
   htmlUrl: string;
-  createdAt: string;
+  createdAt: Date;
   labels: { name: string }[];
   body: string;
   repoName: string;
@@ -45,15 +42,13 @@ const IssueCard: React.FC<IssueCardProps> = ({
           paddingRight: 2,
         }}
       >
-          <Chip
+        <Chip
           icon={<GitHub />}
           label={repoName || "Unknown"}
           size="small"
           sx={{ marginRight: "auto" }}
         />
-        <Box
-          sx={{ display: "flex", flexShrink: 1, flexWrap: "wrap", gap: 1 }}
-        >
+        <Box sx={{ display: "flex", flexShrink: 1, flexWrap: "wrap", gap: 1 }}>
           {labels.map((label, index) => (
             <Chip key={index} label={label.name} size="small" />
           ))}
@@ -68,7 +63,7 @@ const IssueCard: React.FC<IssueCardProps> = ({
         }}
       >
         <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
-        Issue by {createdBy} {assignedTo && ` | Assigned to ${assignedTo}`}
+          Issue by {createdBy} {assignedTo && ` | Assigned to ${assignedTo}`}
         </Typography>
         <Typography variant="h5" component="div">
           <Link href={htmlUrl} target="_blank" rel="noopener">
@@ -85,7 +80,12 @@ const IssueCard: React.FC<IssueCardProps> = ({
             marginTop: "auto",
           }}
         >
-          <Typography color="text.secondary">Created on: <Typography color="text.secondary" sx={{ fontWeight: "bold" }}>{new Date(createdAt).toLocaleDateString()}</Typography> </Typography>
+          <Typography color="text.secondary">
+            Created on:{" "}
+            <Typography color="text.secondary" sx={{ fontWeight: "bold" }}>
+              {new Date(createdAt).toLocaleDateString()}
+            </Typography>{" "}
+          </Typography>
 
           <Box gap={2} display={"flex"}>
             <Link href={htmlUrl} target="_blank" rel="noopener">
