@@ -5,7 +5,7 @@ import { PullRequest } from "../models/PullRequest";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid2";
 
-import PullRequestCard from "../components/PullRequestCard";
+import PullRequestCard from "../components/Cards/PullRequestCard";
 import { Typography } from "@mui/material";
 
 export const MyPullRequests: React.FC = () => {

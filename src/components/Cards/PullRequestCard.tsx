@@ -9,7 +9,7 @@ import {
   Box,
   Tooltip,
 } from "@mui/material";
-import { PullRequest } from "../models/PullRequest";
+import { PullRequest } from "../../models/PullRequest";
 import {
   DesignServices,
   FileOpen,
@@ -17,12 +17,12 @@ import {
   Lock,
   Visibility,
 } from "@mui/icons-material";
-import { PullRequestChecks } from "./PullRequestChecks";
-import { PullRequestsApprovals } from "./PullRequestsApprovals";
-import { PullRequestMergeCheck } from "./PullRequestMergeCheck";
-import getContrastColor from "../utils/getContractColor";
-import replaceEmoticons from "../utils/replaceEmoticons";
-import { getColorForDaysInReview } from "../utils/getColorsForDaysInReview";
+import { PullRequestChecks } from "../PullRequestChecks";
+import { PullRequestsApprovals } from "../PullRequestsApprovals";
+import { PullRequestMergeCheck } from "../PullRequestMergeCheck";
+import getContrastColor from "../../utils/getContractColor";
+import replaceEmoticons from "../../utils/replaceEmoticons";
+import { getColorForDaysInReview } from "../../utils/getColorsForDaysInReview";
 
 interface PullRequestCardProps {
   pr: PullRequest;

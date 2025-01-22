@@ -7,7 +7,7 @@ import Grid from "@mui/material/Grid2";
 
 // import PullRequestCard from "../components/PullRequestCard";
 import { Typography } from "@mui/material";
-import { RepositoryCard } from "../components/Repositories/RepositoryCard";
+import { RepositoryCard } from "../components/Cards/RepositoryCard";
 
 export const RepositoriesPage: React.FC = () => {
   const { octokit, repositorySettings, user } = React.useContext(ConfigContext);

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { ConfigContext } from "../context/ConfigContext";
 import { PullRequest } from "../models/PullRequest";
-import PullRequestCard from "../components/PullRequestCard";
+import PullRequestCard from "../components/Cards/PullRequestCard";
 import {
   Box,
   Button,
