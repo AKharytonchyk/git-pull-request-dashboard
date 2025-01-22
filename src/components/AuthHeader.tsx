@@ -6,6 +6,7 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router";
 import { PullRequestIcon } from "./icons/PullRequestIcon";
 import { RepositoryIcon } from "./icons/RepositoryIcon";
+import { IssuesIcon } from "./icons/IssuesIcon";
 
 export type AuthHeaderProps = {
   user: {
@@ -60,6 +61,13 @@ export const AuthHeader: React.FC<AuthHeaderProps> = ({
           sx={{ backgroundColor: "#f5f5f5" }}
           value="/repositories"
           title="Repositories"
+        />
+        <BottomNavigationAction
+          label="Issues"
+          icon={<IssuesIcon />}
+          sx={{ backgroundColor: "#f5f5f5" }}
+          value="/issues"
+          title="Issues"
         />
         <BottomNavigationAction
           label="Coverage"

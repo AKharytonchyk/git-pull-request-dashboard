@@ -11,6 +11,7 @@ import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
 import { MyPullRequests } from "./pages/MyPullRequests";
 import { RepositoriesPage } from "./pages/RepositoriesPage";
+import IssuesPage from "./pages/IssuesPage";
 import { RepositoryItem } from "./pages/RepositoryItem";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ root.render(
                 <Route index element={<RepositoriesPage />} />
                 <Route path=":owner/:repo" element={<RepositoryItem />} />
               </Route>
+              <Route path="/issues" element={<IssuesPage />} />
             </Route>
           </Routes>
         </HashRouter>
