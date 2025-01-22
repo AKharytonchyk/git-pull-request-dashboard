@@ -18,6 +18,7 @@ import React from "react";
 import { ConfigContext } from "../../context/ConfigContext";
 import { useQuery } from "@tanstack/react-query";
 import { Link as RouterLink } from "react-router";
+import { AsyncChip } from "../AsyncChip";
 
 export type RepositoryCardProps = {
   name: string;
@@ -103,26 +104,26 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
         <Stack direction="row" justifyContent={"space-between"}>
           <Stack direction="row" spacing={1} alignItems={"center"}>
             <Typography color="text.secondary">Max Days: </Typography>
-            <Chip
+            <AsyncChip
+              isLoading={loadingPulls}
               label={date}
               size="small"
               sx={{ bgcolor: badgeColor }}
-              icon={loadingPulls ? <CircularProgress /> : undefined}
             />
             <Typography color="text.secondary">PRs: </Typography>
-            <Chip
+            <AsyncChip
+              isLoading={loadingPulls}
               label={pulls?.length || 0}
               size="small"
               color="primary"
-              icon={loadingPulls ? <CircularProgress /> : undefined}
             />
             <Typography color="text.secondary">Issues: </Typography>
-            <Chip
+            <AsyncChip
               label={issues?.length || 0}
               size="small"
               color="primary"
               sx={{ bgcolor: loadingIssues ? "grey.300" : "" }}
-              icon={loadingIssues ? <CircularProgress /> : undefined}
+              isLoading={loadingIssues}
             />
           </Stack>
           <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>

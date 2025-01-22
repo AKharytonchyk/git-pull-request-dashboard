@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import React, { useMemo } from "react";
 import { ConfigContext } from "../context/ConfigContext";
 import { Link, useParams } from "react-router";
-import PullRequestCard from "../components/PullRequestCard";
+import PullRequestCard from "../components/Cards/PullRequestCard";
 import { IssueCard } from "../components/Cards/IssueCard";
 import { Grid2, Stack, Tab, Tabs, Tooltip, Typography } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
