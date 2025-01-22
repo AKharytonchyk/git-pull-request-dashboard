@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import React from "react";
 import { Repository } from "../models/Repository";
-import { ConfigContext } from "../App";
+import { ConfigContext } from "../context/ConfigContext";
 
 export type RepositorySelectorProps = {
   repository: Repository;
@@ -34,7 +34,7 @@ export const RepositorySelector: React.FC<RepositorySelectorProps> = ({
   const handleSelect = React.useCallback(() => {
     handleRepositorySelect(
       repository.full_name,
-      !repositorySettings[repository.full_name],
+      !repositorySettings[repository.full_name]
     );
     setOpen(true);
   }, [handleRepositorySelect, repository, repositorySettings]);
@@ -42,7 +42,7 @@ export const RepositorySelector: React.FC<RepositorySelectorProps> = ({
   const handleUndo = React.useCallback(() => {
     handleRepositorySelect(
       repository.full_name,
-      !repositorySettings[repository.full_name],
+      !repositorySettings[repository.full_name]
     );
     setOpen(false);
   }, [handleRepositorySelect, repository, repositorySettings]);

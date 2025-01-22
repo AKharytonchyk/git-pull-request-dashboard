@@ -6,7 +6,7 @@ import { githubLightTheme } from "@uiw/react-json-view/githubLight";
 import { IconButton, TextField } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
-import { ConfigContext } from "../App";
+import { ConfigContext } from "../context/ConfigContext";
 
 export type ExportSettingsProps = {
   isOpen: boolean;
@@ -47,7 +47,7 @@ export const ExportSettings: React.FC<ExportSettingsProps> = ({ isOpen }) => {
       for (const key in parsedJson) {
         if (!regexKey.test(key) || typeof parsedJson[key] !== "boolean") {
           throw new Error(
-            `Invalid key or value. Key: "${key}", Value: ${parsedJson[key]}`,
+            `Invalid key or value. Key: "${key}", Value: ${parsedJson[key]}`
           );
         }
       }

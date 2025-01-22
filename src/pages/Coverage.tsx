@@ -12,8 +12,8 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { Navigate } from "react-router-dom";
-import { ConfigContext } from "../App";
+import { Navigate } from "react-router";
+import { ConfigContext } from "../context/ConfigContext";
 import ErrorMessage from "../components/MissingCoverageErrorMessage";
 import lz from "lz-string";
 import { CoverageResponse } from "../models/CoverageResponse";
@@ -39,7 +39,7 @@ export const Coverage: React.FC = () => {
 
   const dataLength = React.useMemo(
     () => Object.keys(data || {}).length,
-    [data],
+    [data]
   );
 
   const { repositorySettings } = React.useContext(ConfigContext);
@@ -70,7 +70,7 @@ export const Coverage: React.FC = () => {
   }
 
   return (
-    <Box padding={2} width={"calc(100vw - 2em)"}>
+    <>
       <Box
         display="flex"
         flexDirection="row"
@@ -102,7 +102,7 @@ export const Coverage: React.FC = () => {
           </Table>
         </TableContainer>
       )}
-    </Box>
+    </>
   );
 };
 

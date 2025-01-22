@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
-import { ConfigContext } from "../App";
+import { ConfigContext } from "../context/ConfigContext";
 import { PullRequest } from "../models/PullRequest";
-import PullRequestCard from "./PullRequestCard";
+import PullRequestCard from "../components/PullRequestCard";
 import {
   Box,
   Button,
@@ -11,12 +11,12 @@ import {
   Tooltip,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import LandingPage from "../pages/LandingPage";
-import { InputFilter } from "./InputFilter";
+import LandingPage from "./LandingPage";
+import { InputFilter } from "../components/InputFilter";
 import { useQueries } from "@tanstack/react-query";
-import { Navigate } from "react-router-dom";
-import PRLoadingPage from "../pages/PRLoadingPage";
-import { PullRequestFilters } from "./Dashboard/PullRequestFilters";
+import { Navigate } from "react-router";
+import PRLoadingPage from "./PRLoadingPage";
+import { PullRequestFilters } from "../components/Dashboard/PullRequestFilters";
 import { FilterList } from "@mui/icons-material";
 
 export const Dashboard: React.FC = () => {
@@ -77,7 +77,7 @@ export const Dashboard: React.FC = () => {
   }
 
   return (
-    <Box padding={2} width={"calc(100vw - 2em)"}>
+    <>
       {pending && data.length === 0 && <PRLoadingPage />}
       {!pending && data.length === 0 && <LandingPage />}
       {data.length > 0 && (
@@ -135,7 +135,7 @@ export const Dashboard: React.FC = () => {
           </Grid>
         </>
       )}
-    </Box>
+    </>
   );
 };
 

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { ConfigContext } from "../App";
+import { ConfigContext } from "../context/ConfigContext";
 import { useQueries } from "@tanstack/react-query";
 import { PullRequest } from "../models/PullRequest";
 import Box from "@mui/material/Box";
@@ -38,12 +38,12 @@ export const MyPullRequests: React.FC = () => {
     combine: (results) => {
       return {
         data: results
-          .map((result) => result.data ?? ([] as PullRequest[]))
+          .map((result) => result.data ?? [])
           .flat()
           .filter(
             (pr) =>
               pr.user?.login === user?.login ||
-              pr.assignee?.login === user?.login ||
+              (pr.assignee as any)?.login === user?.login ||
               pr.assignees?.some((a) => a.login === user?.login) ||
               pr.requested_reviewers?.some((r) => r.login === user?.login)
           ),
@@ -81,17 +81,15 @@ export const MyPullRequests: React.FC = () => {
   }
 
   return (
-    <Box padding={2} width={"calc(100vw - 2em)"}>
-      <Grid container spacing={2}>
-        {data.map(
-          (pull) =>
-            pull && (
-              <Grid key={pull.id} size={{ xl: 6, xs: 12 }}>
-                <PullRequestCard pr={pull as unknown as PullRequest} />
-              </Grid>
-            )
-        )}
-      </Grid>
-    </Box>
+    <Grid container spacing={2}>
+      {data.map(
+        (pull) =>
+          pull && (
+            <Grid key={pull.id} size={{ xl: 6, xs: 12 }}>
+              <PullRequestCard pr={pull as unknown as PullRequest} />
+            </Grid>
+          )
+      )}
+    </Grid>
   );
 };

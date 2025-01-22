@@ -1,6 +1,6 @@
 import React from "react";
 import { useOnScreen } from "../hooks/useOnScreen";
-import { ConfigContext } from "../App";
+import { ConfigContext } from "../context/ConfigContext";
 import { CircularProgress, Tooltip, Typography } from "@mui/material";
 import { Block, CallMerge } from "@mui/icons-material";
 import { useQuery } from "@tanstack/react-query";
