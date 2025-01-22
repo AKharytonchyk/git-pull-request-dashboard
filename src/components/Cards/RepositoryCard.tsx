@@ -115,6 +115,7 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
                 isLoading={loadingPulls}
                 label={date}
                 size="small"
+                tooltip="Max days in review"
                 sx={{ bgcolor: badgeColor, color: "white" }}
               />
             </Stack>
@@ -135,7 +136,7 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
               </Typography>
               <AsyncChip
                 isLoading={loadingPulls}
-                label={pulls?.filter((pr) => pr.state === "open").length || 0}
+                label={pulls?.filter(({ draft }) => !draft).length || 0}
                 size="small"
                 color="success"
                 tooltip="Open PRs"
@@ -156,7 +157,7 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
               <Typography color="text.secondary">Draft PRs: </Typography>
               <AsyncChip
                 isLoading={loadingPulls}
-                label={pulls?.filter((pr) => pr.state !== "open").length || 0}
+                label={pulls?.filter(({ draft }) => draft).length || 0}
                 size="small"
                 tooltip="Draft PRs"
                 color="secondary"
@@ -178,6 +179,7 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
                 color="warning"
                 sx={{ bgcolor: loadingIssues ? "grey.300" : "" }}
                 isLoading={loadingIssues}
+                tooltip="Open Issues"
               />
             </Stack>
           </Stack>
