@@ -1,12 +1,10 @@
 import {
   Card,
   CardContent,
-  Chip,
   Box,
   Typography,
   Tooltip,
   Link,
-  CircularProgress,
   Stack,
 } from "@mui/material";
 import { PullRequest } from "../../models/PullRequest";
