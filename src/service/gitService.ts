@@ -128,4 +128,14 @@ export class GitService {
       ),
     );
   }
+
+  async getIssues(owner: string, repo: string) {
+    return rateLimiter.enqueue(() =>
+      this.octokit.issues.listForRepo({
+        owner,
+        repo,
+        state: "open",
+      })
+    ).then((response) => response.data);
+  }
 }

@@ -11,6 +11,7 @@ import LandingPage from "./pages/LandingPage";
 import Dashboard from "./components/Dashboard";
 import { MyPullRequests } from "./pages/MyPullRequests";
 import { RepositoriesPage } from "./pages/RepositoriesPage";
+import IssuesPage from "./pages/IssuesPage";
 
 const router = createHashRouter([
   {
@@ -36,6 +37,10 @@ const router = createHashRouter([
       {
         path: "/repositories",
         element: <RepositoriesPage />,
+      },
+      {
+        path: "/issues",
+        element: <IssuesPage />,
       },
     ],
   },
