@@ -66,7 +66,7 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
     [oldestPr]
   );
 
-  const repo = useMemo(() => pulls?.[0].base?.repo, [pulls]);
+  const repo = useMemo(() => pulls?.[0]?.base?.repo, [pulls]);
 
   return (
     <Card
