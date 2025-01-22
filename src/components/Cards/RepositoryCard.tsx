@@ -7,7 +7,6 @@ import {
   Link,
   Stack,
 } from "@mui/material";
-import { PullRequest } from "../../models/PullRequest";
 import { LanguageIcon } from "../icons/LanguageIcon";
 import { useMemo } from "react";
 import { getColorForDaysInReview } from "../../utils/getColorsForDaysInReview";
@@ -20,7 +19,6 @@ import { AsyncChip } from "../AsyncChip";
 
 export type RepositoryCardProps = {
   name: string;
-  pulls: PullRequest[];
 };
 
 export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
@@ -76,7 +74,7 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
         display: "flex",
         flexDirection: "column",
         height: "100%",
-        minWidth: 320,
+        minWidth: 700,
       }}
     >
       <CardContent
@@ -100,29 +98,88 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
           <Typography variant="h6">{repo?.full_name || "Unknown"}</Typography>
         </Box>
         <Stack direction="row" justifyContent={"space-between"}>
-          <Stack direction="row" spacing={1} alignItems={"center"}>
-            <Typography color="text.secondary">Max Days: </Typography>
-            <AsyncChip
-              isLoading={loadingPulls}
-              label={date}
-              size="small"
-              sx={{ bgcolor: badgeColor }}
-            />
-            <Typography color="text.secondary">PRs: </Typography>
-            <AsyncChip
-              isLoading={loadingPulls}
-              label={pulls?.length || 0}
-              size="small"
-              color="primary"
-            />
-            <Typography color="text.secondary">Issues: </Typography>
-            <AsyncChip
-              label={issues?.length || 0}
-              size="small"
-              color="primary"
-              sx={{ bgcolor: loadingIssues ? "grey.300" : "" }}
-              isLoading={loadingIssues}
-            />
+          <Stack direction="row" alignItems={"center"}>
+            <Stack
+              direction="row"
+              sx={{
+                minWidth: 148,
+                justifyContent: "space-between",
+                borderRight: "1px solid",
+                borderColor: "grey.300",
+                paddingRight: 1,
+                paddingLeft: 1,
+              }}
+            >
+              <Typography color="text.secondary">Max Days: </Typography>
+              <AsyncChip
+                isLoading={loadingPulls}
+                label={date}
+                size="small"
+                sx={{ bgcolor: badgeColor, color: "white" }}
+              />
+            </Stack>
+            <Stack
+              direction="row"
+              sx={{
+                minWidth: 148,
+                gap: 1,
+                justifyContent: "space-between",
+                borderRight: "1px solid",
+                borderColor: "grey.300",
+                paddingRight: 1,
+                paddingLeft: 1,
+              }}
+            >
+              <Typography color="text.secondary" sx={{ mr: "auto" }}>
+                PRs:
+              </Typography>
+              <AsyncChip
+                isLoading={loadingPulls}
+                label={pulls?.filter((pr) => pr.state === "open").length || 0}
+                size="small"
+                color="success"
+                tooltip="Open PRs"
+              />
+            </Stack>
+            <Stack
+              direction="row"
+              sx={{
+                minWidth: 148,
+                gap: 1,
+                justifyContent: "space-between",
+                borderRight: "1px solid",
+                borderColor: "grey.300",
+                paddingRight: 1,
+                paddingLeft: 1,
+              }}
+            >
+              <Typography color="text.secondary">Draft PRs: </Typography>
+              <AsyncChip
+                isLoading={loadingPulls}
+                label={pulls?.filter((pr) => pr.state !== "open").length || 0}
+                size="small"
+                tooltip="Draft PRs"
+                color="secondary"
+              />{" "}
+            </Stack>
+            <Stack
+              direction="row"
+              sx={{
+                justifyContent: "space-between",
+                minWidth: 148,
+                gap: 1,
+                paddingLeft: 1,
+              }}
+            >
+              <Typography color="text.secondary">Issues: </Typography>
+              <AsyncChip
+                label={issues?.length || 0}
+                size="small"
+                color="warning"
+                sx={{ bgcolor: loadingIssues ? "grey.300" : "" }}
+                isLoading={loadingIssues}
+              />
+            </Stack>
           </Stack>
           <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
             <Link

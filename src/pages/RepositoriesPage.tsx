@@ -32,7 +32,7 @@ export const RepositoriesPage: React.FC = () => {
   return (
     <Grid container spacing={2} sx={{ xl: 4 }}>
       {activeRepositories.map((repo) => (
-        <Grid size={{ xs: 12, lg: 6, xl: 4 }} key={repo}>
+        <Grid size={{ xs: 12, lg: 6 }} key={repo}>
           <RepositoryCard name={repo} />
         </Grid>
       ))}
