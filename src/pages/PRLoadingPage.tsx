@@ -3,13 +3,7 @@ import { CircularProgress, Typography, Box } from "@mui/material";
 
 export const PRLoadingPage: React.FC = () => {
   return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="center"
-      minHeight="calc(100vh - 100px)"
-    >
+    <>
       <Box
         component={"img"}
         src="loading.webp"
@@ -25,7 +19,7 @@ export const PRLoadingPage: React.FC = () => {
         Hang tight! We're fetching your pull requests faster than you can say
         "Merge Conflict"!
       </Typography>
-    </Box>
+    </>
   );
 };
 

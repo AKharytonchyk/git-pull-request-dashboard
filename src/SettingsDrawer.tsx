@@ -1,7 +1,7 @@
 import { Box, Drawer, List, Switch, Typography } from "@mui/material";
 import React from "react";
 import { Organization } from "./models/Organization";
-import { ConfigContext } from "./App";
+import { ConfigContext } from "./context/ConfigContext";
 import { RepoSettingAccordion } from "./components/RepoSettingAccordion";
 import { useQuery } from "@tanstack/react-query";
 import { ExportSettings } from "./components/ExportSettings";
@@ -33,7 +33,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
       orgs.map((org) => (
         <RepoSettingAccordion key={org.id} org={org} type="org" />
       )),
-    [orgs],
+    [orgs]
   );
 
   const handleClose = React.useCallback(() => {

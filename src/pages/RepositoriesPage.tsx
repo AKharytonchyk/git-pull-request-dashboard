@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { ConfigContext } from "../App";
+import { ConfigContext } from "../context/ConfigContext";
 import { useQueries } from "@tanstack/react-query";
 import { PullRequest } from "../models/PullRequest";
 import Box from "@mui/material/Box";
@@ -79,14 +79,12 @@ export const RepositoriesPage: React.FC = () => {
   }
 
   return (
-    <Box padding={2} width={"calc(100vw - 2em)"}>
-      <Grid container spacing={2} sx={{ xl: 4 }}>
-        {Object.keys(data).map((repo) => (
-          <Grid size={{ xs: 12, md: 6, lg: 4, xl: 4 }} key={repo}>
-            <RepositoryCard name={repo} pulls={data[repo]} />
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
+    <Grid container spacing={2} sx={{ xl: 4 }}>
+      {Object.keys(data).map((repo) => (
+        <Grid size={{ xs: 12, lg: 6, xl: 4 }} key={repo}>
+          <RepositoryCard name={repo} pulls={data[repo]} />
+        </Grid>
+      ))}
+    </Grid>
   );
 };

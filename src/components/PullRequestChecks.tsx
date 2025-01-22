@@ -1,5 +1,5 @@
 import React from "react";
-import { ConfigContext } from "../App";
+import { ConfigContext } from "../context/ConfigContext";
 import { CheckRun } from "../models/CheckRun";
 import {
   Box,
@@ -43,9 +43,9 @@ export const PullRequestChecks: React.FC<PullRequestChecksProps> = ({
     () =>
       checks.every(
         (check) =>
-          check.conclusion === "success" || check.conclusion === "skipped",
+          check.conclusion === "success" || check.conclusion === "skipped"
       ),
-    [checks],
+    [checks]
   );
 
   return (

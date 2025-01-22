@@ -1,5 +1,7 @@
 import { Octokit } from "@octokit/rest";
 import rateLimiter from "../utils/RateLimiterQueue";
+import { PullRequest } from "../models/PullRequest";
+import { Issue } from "../models/Issue";
 
 export class GitService {
   private readonly octokit: Octokit;
@@ -20,7 +22,19 @@ export class GitService {
     const [owner, name] = repo.split("/");
     const response = this.getPulls(owner, name);
 
-    return (await response).data;
+    return (await response).data
+      .map((pr) => pr as any as PullRequest)
+      .map((pr) => ({ ...pr, created_at: new Date(pr.created_at) }));
+  }
+
+  async getIssues(fullName: string) {
+    const [owner, name] = fullName.split("/");
+    const issues = await this.getRepoIssues(owner, name);
+    return issues.data?.length
+      ? issues.data
+          .filter(({ pull_request }) => !pull_request)
+          .map((issue) => issue as any as Issue)
+      : [];
   }
 
   testAuthentication() {
@@ -29,7 +43,7 @@ export class GitService {
 
   getOrganizations() {
     return rateLimiter.enqueue(() =>
-      this.octokit.orgs.listForAuthenticatedUser(),
+      this.octokit.orgs.listForAuthenticatedUser()
     );
   }
 
@@ -40,7 +54,7 @@ export class GitService {
         type: "all",
         per_page: 100,
         timeout: 5000,
-      }),
+      })
     );
 
     return repos
@@ -52,8 +66,8 @@ export class GitService {
     return rateLimiter.enqueue(() =>
       this.octokit.paginate(
         this.octokit.activity.listReposStarredByAuthenticatedUser,
-        { per_page: 100, timeout: 5000 },
-      ),
+        { per_page: 100, timeout: 5000 }
+      )
     );
   }
 
@@ -63,7 +77,7 @@ export class GitService {
         per_page: 100,
         timeout: 5000,
         type: "owner",
-      }),
+      })
     );
   }
 
@@ -76,7 +90,7 @@ export class GitService {
           ref: `pull/${prNumber}/head`,
           filter: "latest",
         }),
-      true,
+      true
     );
   }
 
@@ -88,7 +102,7 @@ export class GitService {
           repo,
           pull_number: prNumber,
         }),
-      true,
+      true
     );
     return mergeConflicts.data;
   }
@@ -101,7 +115,7 @@ export class GitService {
           repo,
           pull_number: prNumber,
         }),
-      true,
+      true
     );
 
     if (
@@ -124,8 +138,19 @@ export class GitService {
           }
           return acc;
         },
-        {} as Record<string, any>,
-      ),
+        {} as Record<string, any>
+      )
+    );
+  }
+
+  private async getRepoIssues(owner: string, repo: string) {
+    return rateLimiter.enqueue(() =>
+      this.octokit.issues.listForRepo({
+        owner,
+        repo,
+        state: "open",
+        per_page: 100,
+      })
     );
   }
 }

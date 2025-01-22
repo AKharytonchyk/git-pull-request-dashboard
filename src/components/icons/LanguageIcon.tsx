@@ -2,7 +2,7 @@ import { Icon } from "@iconify/react";
 import { Tooltip } from "@mui/material";
 
 export const LanguageIcon: React.FC<{
-  language: string | null;
+  language: string | null | undefined;
   size?: number;
 }> = ({ language, size }) => {
   const icons = {

@@ -57,7 +57,7 @@ export const MultiselectFilter: React.FC<MultiselectFilterProps> = ({
   const labelId = React.useMemo(() => `${id}-label`, [id]);
 
   return (
-    <FormControl sx={{ m: 1, width: 300 }}>
+    <FormControl sx={{ m: 1, width: 300, ml: 0 }}>
       <InputLabel id={labelId} size="small">
         {name}
       </InputLabel>
