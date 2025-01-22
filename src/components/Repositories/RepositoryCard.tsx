@@ -16,19 +16,27 @@ import { Visibility } from "@mui/icons-material";
 export type RepositoryCardProps = {
   name: string;
   pulls: PullRequest[];
+  openCount: number;
+  draftCount: number;
 };
 
-export const RepositoryCard: React.FC<RepositoryCardProps> = ({ pulls }) => {
+export const RepositoryCard: React.FC<RepositoryCardProps> = ({
+  pulls,
+  openCount,
+  draftCount,
+}) => {
   const [
     {
       base: { repo },
     },
   ] = pulls;
 
-  const oldestPr = useMemo(() => {
-    return pulls.sort(
-      (prA, prB) => prA.created_at.getTime() - prB.created_at.getTime()
-    )[0];
+  const oldestOpenPr = useMemo(() => {
+    return pulls
+      .filter((pr) => !pr.draft) // Exclude draft PRs
+      .sort(
+        (prA, prB) => prA.created_at.getTime() - prB.created_at.getTime()
+      )[0]; // Get the oldest PR
   }, [pulls]);
 
   return (
@@ -70,17 +78,26 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ pulls }) => {
           }}
         >
           <Typography color="text.secondary">Max Days: </Typography>
-          <Chip
-            label={Math.floor(
-              (new Date().getTime() - oldestPr.created_at?.getTime()) /
-                (1000 * 3600 * 24)
-            )}
-            size="small"
-            sx={{ bgcolor: getColorForDaysInReview(oldestPr.created_at) }}
-          />
-          {"|"}
-          <Typography color="text.secondary">PRs: </Typography>
-          <Chip label={pulls.length} size="small" color="primary" />
+          {oldestOpenPr ? (
+            <Chip
+              label={Math.floor(
+                (new Date().getTime() - oldestOpenPr.created_at.getTime()) /
+                  (1000 * 3600 * 24)
+              )}
+              size="small"
+              sx={{
+                bgcolor: getColorForDaysInReview(oldestOpenPr.created_at),
+              }}
+            />
+          ) : (
+            <Typography color="text.secondary">N/A</Typography>
+          )}
+          {" | "}
+          <Typography color="text.secondary">Open PRs: </Typography>
+          <Chip label={openCount} size="small" color="primary" />
+          {" | "}
+          <Typography color="text.secondary">Draft PRs: </Typography>
+          <Chip label={draftCount} size="small" color="secondary" />
           <Link
             href={repo.html_url + "/pulls"}
             sx={{ marginLeft: "auto" }}

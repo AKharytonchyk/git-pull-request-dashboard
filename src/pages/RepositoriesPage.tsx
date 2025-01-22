@@ -4,8 +4,6 @@ import { useQueries } from "@tanstack/react-query";
 import { PullRequest } from "../models/PullRequest";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid2";
-
-// import PullRequestCard from "../components/PullRequestCard";
 import { Typography } from "@mui/material";
 import { RepositoryCard } from "../components/Repositories/RepositoryCard";
 
@@ -44,16 +42,22 @@ export const RepositoriesPage: React.FC = () => {
           .map((pr) => ({ ...pr, created_at: new Date(pr.created_at) }))
           .reduce(
             (acc, pr) => {
-              if (acc[pr.base.repo?.full_name || "Unknown"]) {
-                acc[pr.base.repo?.full_name || "Unknown"].push(
-                  pr as PullRequest
-                );
+              const repoName = pr.base.repo?.full_name || "Unknown";
+              if (!acc[repoName]) {
+                acc[repoName] = { open: 0, draft: 0, pulls: [] };
+              }
+              acc[repoName].pulls.push(pr as PullRequest);
+              if (pr.draft) {
+                acc[repoName].draft++;
               } else {
-                acc[pr.base.repo?.full_name || "Unknown"] = [pr as PullRequest];
+                acc[repoName].open++;
               }
               return acc;
             },
-            {} as Record<string, PullRequest[]>
+            {} as Record<
+              string,
+              { open: number; draft: number; pulls: PullRequest[] }
+            >
           ),
         pending: results.some((result) => result.isLoading),
       };
@@ -79,13 +83,20 @@ export const RepositoriesPage: React.FC = () => {
   }
 
   return (
-    <Box padding={2} width={"calc(100vw - 2em)"}>
-      <Grid container spacing={2} sx={{ xl: 4 }}>
-        {Object.keys(data).map((repo) => (
-          <Grid size={{ xs: 12, md: 6, lg: 4, xl: 4 }} key={repo}>
-            <RepositoryCard name={repo} pulls={data[repo]} />
-          </Grid>
-        ))}
+    <Box padding={2} width={'calc(100vw - 2em)'}>
+      <Grid container spacing={2}>
+        {Object.keys(data)
+          .sort((a, b) => data[b].open - data[a].open)
+          .map((repo) => (
+            <Grid size={{ xs: 12, md: 6, lg: 4, xl: 4 }} key={repo}>
+              <RepositoryCard
+                name={repo}
+                pulls={data[repo].pulls}
+                openCount={data[repo].open}
+                draftCount={data[repo].draft}
+              />
+            </Grid>
+          ))}
       </Grid>
     </Box>
   );
