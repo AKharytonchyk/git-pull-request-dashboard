@@ -19,11 +19,11 @@ export const InputFilter: React.FC<InputFilterProps> = ({
       setFilter(event.target.value);
       onChange(event.target.value);
     },
-    [onChange],
+    [onChange]
   );
 
   return (
-    <FormControl sx={{ m: 1, width: 300 }}>
+    <FormControl sx={{ m: 1, width: 300, ml: 0 }}>
       <InputLabel id="filter-label" size={size}>
         {name}
       </InputLabel>

@@ -3,48 +3,16 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import { RouterProvider, createHashRouter } from "react-router-dom";
+import { HashRouter, Route, Routes } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ScopedCssBaseline } from "@mui/material";
 import Coverage from "./pages/Coverage";
 import LandingPage from "./pages/LandingPage";
-import Dashboard from "./components/Dashboard";
+import Dashboard from "./pages/Dashboard";
 import { MyPullRequests } from "./pages/MyPullRequests";
 import { RepositoriesPage } from "./pages/RepositoriesPage";
 import IssuesPage from "./pages/IssuesPage";
-
-const router = createHashRouter([
-  {
-    path: "/",
-    element: <App />,
-    children: [
-      {
-        path: "/",
-        element: <Dashboard />,
-      },
-      {
-        path: "/login",
-        element: <LandingPage />,
-      },
-      {
-        path: "/coverage",
-        element: <Coverage />,
-      },
-      {
-        path: "/my-pull-requests",
-        element: <MyPullRequests />,
-      },
-      {
-        path: "/repositories",
-        element: <RepositoriesPage />,
-      },
-      {
-        path: "/issues",
-        element: <IssuesPage />,
-      },
-    ],
-  },
-]);
+import { RepositoryItem } from "./pages/RepositoryItem";
 
 const queryClient = new QueryClient();
 
@@ -55,7 +23,21 @@ root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <ScopedCssBaseline>
-        <RouterProvider router={router} />
+        <HashRouter>
+          <Routes>
+            <Route path="/" element={<App />}>
+              <Route index element={<Dashboard />} />
+              <Route path="/login" element={<LandingPage />} />
+              <Route path="/coverage" element={<Coverage />} />
+              <Route path="/my-pull-requests" element={<MyPullRequests />} />
+              <Route path="/repositories">
+                <Route index element={<RepositoriesPage />} />
+                <Route path=":owner/:repo" element={<RepositoryItem />} />
+              </Route>
+              <Route path="/issues" element={<IssuesPage />} />
+            </Route>
+          </Routes>
+        </HashRouter>
       </ScopedCssBaseline>
     </QueryClientProvider>
   </React.StrictMode>

@@ -1,6 +1,8 @@
-import { green, red, amber } from "@mui/material/colors";
+import { green, red, amber, blue } from "@mui/material/colors";
 
-export const getColorForDaysInReview = (createdAt: Date) => {
+export const getColorForDaysInReview = (createdAt: Date | undefined) => {
+  if (!createdAt) return blue[500];
+
   const today = new Date();
   const daysInReview = Math.floor(
     (today.getTime() - new Date(createdAt).getTime()) / (1000 * 3600 * 24)

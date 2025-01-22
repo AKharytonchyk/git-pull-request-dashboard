@@ -5,20 +5,8 @@ import { AppBar, Box, Toolbar } from "@mui/material";
 import { SettingsDrawer } from "./SettingsDrawer";
 import { AuthHeader } from "./components/AuthHeader";
 import { UnAuthHeader } from "./components/UnAuthHeader";
-import { Outlet, useNavigate } from "react-router-dom";
-
-export const ConfigContext = React.createContext<{
-  octokit: GitService | null;
-  repositorySettings: Record<string, boolean>;
-  handleRepositorySelect: (repository: string, selected: boolean) => void;
-  saveRawSettings: (settings: Record<string, boolean> | undefined) => void;
-  user?: { login: string; avatar_url: string; url: string };
-}>({
-  octokit: null,
-  repositorySettings: {},
-  handleRepositorySelect: () => {},
-  saveRawSettings: () => {},
-});
+import { Outlet, useNavigate } from "react-router";
+import { ConfigContext } from "./context/ConfigContext";
 
 function App() {
   const [user, setUser] = React.useState<{
@@ -148,7 +136,9 @@ function App() {
             paddingTop: "4em",
           }}
         >
-          <Outlet />
+          <Box padding={2} width={"calc(100vw - 2em)"}>
+            <Outlet />
+          </Box>
         </Box>
         {octokit && (
           <SettingsDrawer

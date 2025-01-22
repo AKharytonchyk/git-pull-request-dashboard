@@ -3,7 +3,7 @@ import { Box, Avatar, Chip, Button, Tooltip } from "@mui/material";
 import BottomNavigation from "@mui/material/BottomNavigation";
 import BottomNavigationAction from "@mui/material/BottomNavigationAction";
 import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router";
 import { PullRequestIcon } from "./icons/PullRequestIcon";
 import { RepositoryIcon } from "./icons/RepositoryIcon";
 import { IssuesIcon } from "./icons/IssuesIcon";

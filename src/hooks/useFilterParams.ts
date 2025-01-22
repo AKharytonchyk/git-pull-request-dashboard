@@ -3,7 +3,7 @@ import {
   compressToEncodedURIComponent,
   decompressFromEncodedURIComponent,
 } from "lz-string";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router";
 
 export const useFilterParams = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -42,7 +42,7 @@ export const useFilterParams = () => {
 
       setSearchParams(newSearchParams);
     },
-    [searchParams, setSearchParams],
+    [searchParams, setSearchParams]
   );
 
   return {
