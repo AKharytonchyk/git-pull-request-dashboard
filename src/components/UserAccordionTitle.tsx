@@ -1,6 +1,6 @@
 import React from "react";
 import { User } from "../models/User";
-import { ConfigContext } from "../App";
+import { ConfigContext } from "../context/ConfigContext";
 import { Box, Avatar } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 

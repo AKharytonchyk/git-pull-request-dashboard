@@ -16,7 +16,7 @@ import {
 import { ExpandMore } from "@mui/icons-material";
 import { Repository } from "../models/Repository";
 import { RepositorySelector } from "./RepositorySelector";
-import { ConfigContext } from "../App";
+import { ConfigContext } from "../context/ConfigContext";
 import { OrgTitle } from "./OrgAccordionTitle";
 import { UserTitle } from "./UserAccordionTitle";
 import { StarredTitle } from "./StarredAccordingTitle";
@@ -72,7 +72,7 @@ export const RepoSettingAccordion: React.FC<RepoSettingAccordionProps> = ({
           return a.full_name.localeCompare(b.full_name);
         })
         .map((repo) => <RepositorySelector key={repo.id} repository={repo} />),
-    [selectedRepos, repositorySettings],
+    [selectedRepos, repositorySettings]
   );
 
   const handleSelectAll = React.useCallback(() => {
@@ -90,7 +90,7 @@ export const RepoSettingAccordion: React.FC<RepoSettingAccordionProps> = ({
       const filter = event.target.value;
       setSelectedRepos(repos.filter((repo) => repo.full_name.includes(filter)));
     },
-    [repos],
+    [repos]
   );
 
   const title = React.useMemo(() => {
@@ -108,7 +108,7 @@ export const RepoSettingAccordion: React.FC<RepoSettingAccordionProps> = ({
     (_: any, opened: boolean) => {
       setExpanded(opened);
     },
-    [setExpanded],
+    [setExpanded]
   );
 
   return (

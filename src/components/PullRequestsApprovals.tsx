@@ -1,5 +1,5 @@
 import React from "react";
-import { ConfigContext } from "../App";
+import { ConfigContext } from "../context/ConfigContext";
 import { Approvals } from "../models/Approvals";
 import { Avatar, Badge, Box, CircularProgress, Tooltip } from "@mui/material";
 import { useOnScreen } from "../hooks/useOnScreen";
@@ -31,7 +31,7 @@ export const PullRequestsApprovals: React.FC<PullRequestsApprovalsProps> = ({
   });
 
   const getBadgeProps = (
-    state: string,
+    state: string
   ): {
     badgeContent: string;
     color: "success" | "error" | "warning" | "info";
@@ -50,7 +50,7 @@ export const PullRequestsApprovals: React.FC<PullRequestsApprovalsProps> = ({
 
   const allApprovals = React.useMemo(
     () => approvals?.filter((approval) => approval.state !== "DISMISSED"),
-    [approvals],
+    [approvals]
   );
 
   const approvalAvatars = React.useMemo(
@@ -69,7 +69,7 @@ export const PullRequestsApprovals: React.FC<PullRequestsApprovalsProps> = ({
           </Badge>
         </Tooltip>
       )),
-    [allApprovals],
+    [allApprovals]
   );
 
   return (
