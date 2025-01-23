@@ -1,9 +1,15 @@
 import React from "react";
-import { CircularProgress, Typography, Box } from "@mui/material";
+import { CircularProgress, Typography, Box, Stack } from "@mui/material";
 
 export const PRLoadingPage: React.FC = () => {
   return (
-    <>
+    <Stack
+      sx={{
+        justifyContent: "center",
+        alignItems: "center",
+        height: "calc(100vh - 4em - 32px)",
+      }}
+    >
       <Box
         component={"img"}
         src="loading.webp"
@@ -19,7 +25,7 @@ export const PRLoadingPage: React.FC = () => {
         Hang tight! We're fetching your pull requests faster than you can say
         "Merge Conflict"!
       </Typography>
-    </>
+    </Stack>
   );
 };
 

@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from "react-router";
 import { PullRequestIcon } from "./icons/PullRequestIcon";
 import { RepositoryIcon } from "./icons/RepositoryIcon";
 import { IssuesIcon } from "./icons/IssuesIcon";
+import { ThemeSwitch } from "./ThemeSwitch";
 
 export type AuthHeaderProps = {
   user: {
@@ -16,15 +17,26 @@ export type AuthHeaderProps = {
   };
   logOut: () => void;
   setOpenSettings: (value: boolean) => void;
+  onThemeSwitch: () => void;
+  darkMode: boolean;
 };
 
 export const AuthHeader: React.FC<AuthHeaderProps> = ({
   user,
   logOut,
   setOpenSettings,
+  onThemeSwitch,
+  darkMode,
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const [checked, setChecked] = React.useState(darkMode);
+
+  const handleThemeSwitch = () => {
+    setChecked(!checked);
+    onThemeSwitch();
+  };
 
   return (
     <Box
@@ -43,14 +55,12 @@ export const AuthHeader: React.FC<AuthHeaderProps> = ({
         <BottomNavigationAction
           label="Dashboard"
           icon={<Dashboard />}
-          sx={{ backgroundColor: "#f5f5f5" }}
           value="/"
           title="Dashboard"
         />
         <BottomNavigationAction
           label="My PRs"
           icon={<PullRequestIcon />}
-          sx={{ backgroundColor: "#f5f5f5" }}
           value="/my-pull-requests"
           title="My PRs"
         />
@@ -58,21 +68,18 @@ export const AuthHeader: React.FC<AuthHeaderProps> = ({
         <BottomNavigationAction
           label="Repositories"
           icon={<RepositoryIcon />}
-          sx={{ backgroundColor: "#f5f5f5" }}
           value="/repositories"
           title="Repositories"
         />
         <BottomNavigationAction
           label="Issues"
           icon={<IssuesIcon />}
-          sx={{ backgroundColor: "#f5f5f5" }}
           value="/issues"
           title="Issues"
         />
         <BottomNavigationAction
           label="Coverage"
           icon={<Biotech />}
-          sx={{ backgroundColor: "#f5f5f5" }}
           value="/coverage"
           title="Coverage"
         />
@@ -86,6 +93,7 @@ export const AuthHeader: React.FC<AuthHeaderProps> = ({
           justifyContent: "end",
         }}
       >
+        <ThemeSwitch checked={checked} onChange={handleThemeSwitch} />
         <Avatar alt={user?.login} src={user?.avatar_url} sx={{ mr: 2 }} />
         <Chip
           label={user?.login}
