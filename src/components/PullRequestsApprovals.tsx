@@ -56,7 +56,10 @@ export const PullRequestsApprovals: React.FC<PullRequestsApprovalsProps> = ({
   const approvalAvatars = React.useMemo(
     () =>
       allApprovals?.map((approval) => (
-        <Tooltip key={approval.user.login} title={approval.state}>
+        <Tooltip
+          key={approval.user.login}
+          title={`${approval.state} by ${approval.user.login}`}
+        >
           <Badge
             {...getBadgeProps(approval.state)}
             sx={{ height: "1em", display: "flex", alignItems: "center" }}
@@ -88,7 +91,7 @@ export const PullRequestsApprovals: React.FC<PullRequestsApprovalsProps> = ({
         {isLoading ? (
           <CircularProgress size={24} />
         ) : (
-          <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             {" "}
             {approvals.length ? approvalAvatars : "No reviews"}{" "}
           </Box>
