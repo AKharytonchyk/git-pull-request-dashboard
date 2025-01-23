@@ -1,12 +1,19 @@
 import React from "react";
 import "./App.css";
 import { GitService } from "./service/gitService";
-import { AppBar, Box, Toolbar } from "@mui/material";
+import {
+  AppBar,
+  Box,
+  CssBaseline,
+  ThemeProvider,
+  Toolbar,
+} from "@mui/material";
 import { SettingsDrawer } from "./SettingsDrawer";
 import { AuthHeader } from "./components/AuthHeader";
 import { UnAuthHeader } from "./components/UnAuthHeader";
 import { Outlet, useNavigate } from "react-router";
 import { ConfigContext } from "./context/ConfigContext";
+import { darkTheme, lightTheme } from "./theme";
 
 function App() {
   const [user, setUser] = React.useState<{
@@ -17,6 +24,7 @@ function App() {
   const [token, setToken] = React.useState<string>();
   const [octokit, setOctokit] = React.useState<GitService | null>(null);
   const [openSettings, setOpenSettings] = React.useState<boolean>(false);
+  const [isDarkMode, setIsDarkMode] = React.useState<boolean>(false);
   const navigate = useNavigate();
 
   const onLogin = React.useCallback(() => {
@@ -55,6 +63,8 @@ function App() {
         )
       );
     }
+
+    setIsDarkMode(localStorage.getItem("DARK_MODE") === "true");
   }, []);
 
   const logOut = React.useCallback(() => {
@@ -64,6 +74,11 @@ function App() {
     setOctokit(null);
     navigate("/login");
   }, [navigate]);
+
+  const switchDarkMode = React.useCallback(() => {
+    setIsDarkMode((prev) => !prev);
+    localStorage.setItem("DARK_MODE", (!isDarkMode).toString());
+  }, [isDarkMode]);
 
   const [repositorySettings, setRepositorySettings] = React.useState<
     Record<string, boolean>
@@ -98,7 +113,8 @@ function App() {
   }, []);
 
   return (
-    <>
+    <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
+      <CssBaseline />
       <ConfigContext.Provider
         value={{
           octokit,
@@ -121,6 +137,8 @@ function App() {
                 user={user}
                 logOut={logOut}
                 setOpenSettings={setOpenSettings}
+                onThemeSwitch={switchDarkMode}
+                darkMode={isDarkMode}
               />
             )}
           </Toolbar>
@@ -136,7 +154,11 @@ function App() {
             paddingTop: "4em",
           }}
         >
-          <Box padding={2} width={"calc(100vw - 2em)"}>
+          <Box
+            padding={2}
+            width={"calc(100vw - 2em)"}
+            justifyContent={"center"}
+          >
             <Outlet />
           </Box>
         </Box>
@@ -147,7 +169,7 @@ function App() {
           />
         )}
       </ConfigContext.Provider>
-    </>
+    </ThemeProvider>
   );
 }
 

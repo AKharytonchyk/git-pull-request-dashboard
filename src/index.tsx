@@ -5,7 +5,6 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { HashRouter, Route, Routes } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ScopedCssBaseline } from "@mui/material";
 import Coverage from "./pages/Coverage";
 import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
@@ -22,23 +21,21 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <ScopedCssBaseline>
-        <HashRouter>
-          <Routes>
-            <Route path="/" element={<App />}>
-              <Route index element={<Dashboard />} />
-              <Route path="/login" element={<LandingPage />} />
-              <Route path="/coverage" element={<Coverage />} />
-              <Route path="/my-pull-requests" element={<MyPullRequests />} />
-              <Route path="/repositories">
-                <Route index element={<RepositoriesPage />} />
-                <Route path=":owner/:repo" element={<RepositoryItem />} />
-              </Route>
-              <Route path="/issues" element={<IssuesPage />} />
+      <HashRouter>
+        <Routes>
+          <Route path="/" element={<App />}>
+            <Route index element={<Dashboard />} />
+            <Route path="/login" element={<LandingPage />} />
+            <Route path="/coverage" element={<Coverage />} />
+            <Route path="/my-pull-requests" element={<MyPullRequests />} />
+            <Route path="/repositories">
+              <Route index element={<RepositoriesPage />} />
+              <Route path=":owner/:repo" element={<RepositoryItem />} />
             </Route>
-          </Routes>
-        </HashRouter>
-      </ScopedCssBaseline>
+            <Route path="/issues" element={<IssuesPage />} />
+          </Route>
+        </Routes>
+      </HashRouter>
     </QueryClientProvider>
   </React.StrictMode>
 );
