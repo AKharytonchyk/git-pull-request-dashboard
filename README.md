@@ -1,4 +1,3 @@
-
 # GitHub PR Dashboard
 
 The GitHub PR Dashboard is a comprehensive tool designed to streamline the monitoring of pull requests across multiple repositories within the GitHub platform. Ideal for developers and teams managing multiple projects, it offers a unified view of PRs, facilitating better tracking and management.
@@ -12,20 +11,36 @@ The GitHub PR Dashboard is a comprehensive tool designed to streamline the monit
 - **Connect with GitHub**: Securely connect using GitHub Personal Access Tokens (PAT).
 - **Organization and Repository Selection**: Choose which organizations and repositories you want to monitor within the dashboard.
 - **Pull Request Overview**: Get a consolidated view of all pull requests across your selected repositories.
+- **Issue Overview**: Get a consolidate view of all issues actross you selected repositories and organizations.
+- **Dark Mode**: Toggle between light and dark themes.
+- **Settings Management**: Easily manage your settings within the app. Setting sharing is now available via raw setting toggle.
+- **Repository Focus View**: Access repository view and navigate to see PRs and Issues for this particular repository.
 
 ## UI Example
 
 ### PR Dashboard
 
-![Dashboard](docs/images/dashboard.jpeg)
+![Dashboard](docs/images/dashboard-index.jpeg)
+![Dashboard](docs/images/dashboard-filters.png)
 
 ### Settings Overview
 
 ![Settings](docs/images/settings.jpeg)
+![RawSettings](docs/images/settings-export.png)
 
 ### Failed Checks
 
 ![Failed Checks](docs/images/failed-checks.jpeg)
+
+### Issues Dashboard
+
+![Issues](docs/images/issues.png)
+
+### Repository Dashboard
+
+![Repository](docs/images/repo.png)
+![Repository](docs/images/repo-pr.png)
+![Repository](docs/images/repo-issues.png)
 
 ## Getting Started
 
@@ -69,7 +84,7 @@ Follow these instructions to get your GitHub PR Dashboard up and running on your
 
 ### Setting Up Your Personal Access Token
 
-1. Log in to your GitHub account.
+1. Log in to your GitHub account.Fv
 2. Navigate to Settings > Developer settings > Personal access tokens > Generate new token.
 3. Select `repo` and `read:org` scopes.
 4. Generate the token and copy it.

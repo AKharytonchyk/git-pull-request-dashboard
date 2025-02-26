@@ -16,6 +16,7 @@ import { ConfigContext } from "../../context/ConfigContext";
 import { useQuery } from "@tanstack/react-query";
 import { Link as RouterLink } from "react-router";
 import { AsyncChip } from "../AsyncChip";
+import { useOnScreen } from "../../hooks/useOnScreen";
 
 export type RepositoryCardProps = {
   name: string;
@@ -23,6 +24,12 @@ export type RepositoryCardProps = {
 
 export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
   const { octokit } = React.useContext(ConfigContext);
+  const ref = React.useRef<HTMLDivElement>(null);
+  const isOnScreen = useOnScreen(ref);
+  const enabled = useMemo(
+    () => isOnScreen && octokit !== undefined && name !== undefined,
+    [isOnScreen, octokit, name]
+  );
 
   const { data: issues, isLoading: loadingIssues } = useQuery({
     queryKey: ["issues", name],
@@ -31,7 +38,7 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
         return octokit.getIssues(name);
       }
     },
-    enabled: octokit !== undefined && name !== undefined,
+    enabled: enabled,
   });
 
   const { data: pulls, isLoading: loadingPulls } = useQuery({
@@ -41,7 +48,7 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
         return octokit.getPullRequests(name);
       }
     },
-    enabled: octokit !== undefined && name !== undefined,
+    enabled: enabled,
   });
 
   const { data: repoData } = useQuery({
@@ -51,7 +58,7 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
         return octokit.getRepository(name);
       }
     },
-    enabled: octokit !== undefined && name !== undefined,
+    enabled: enabled,
   });
 
   const oldestPr = useMemo(() => {
@@ -86,6 +93,7 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
         height: "100%",
         minWidth: 700,
       }}
+      ref={ref}
     >
       <CardContent
         sx={{
