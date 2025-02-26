@@ -20,7 +20,7 @@ The GitHub PR Dashboard is a comprehensive tool designed to streamline the monit
 
 ### PR Dashboard
 
-![Dashboard](docs/images/dashboard-index.jpeg)
+![Dashboard](docs/images/dashboard-index.png)
 ![Dashboard](docs/images/dashboard-filters.png)
 
 ### Settings Overview
