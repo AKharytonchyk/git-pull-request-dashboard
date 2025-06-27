@@ -1,8 +1,11 @@
+import { envConfig } from "./environmentConfig";
+
 class RateLimiterQueue {
   private queue: Array<() => Promise<void>>;
   private maxRequestsPerMinute: number;
   private activeRequests: number;
   private requestTimestamps: number[];
+  private cleanupInterval: NodeJS.Timeout;
 
   constructor(maxRequestsPerMinute: number) {
     this.queue = [];
@@ -10,28 +13,52 @@ class RateLimiterQueue {
     this.activeRequests = 0;
     this.requestTimestamps = [];
 
-    setInterval(() => {
+    this.cleanupInterval = setInterval(() => {
       this.cleanupOldTimestamps();
     }, 60000);
+  }
+
+  destroy() {
+    clearInterval(this.cleanupInterval);
   }
 
   async enqueue<T>(
     requestFunction: () => Promise<T>,
     unshift = false,
+    retries = 3
   ): Promise<T> {
     return new Promise((resolve, reject) => {
       const queueAction = async () => {
-        try {
-          this.activeRequests++;
-          const result = await requestFunction();
-          resolve(result);
-        } catch (error) {
-          reject(error);
-        } finally {
-          this.activeRequests--;
-          this.requestTimestamps.push(Date.now());
-          this.processQueue();
+        let lastError: any;
+        
+        for (let attempt = 1; attempt <= retries; attempt++) {
+          try {
+            this.activeRequests++;
+            const result = await requestFunction();
+            resolve(result);
+            return;
+          } catch (error: any) {
+            lastError = error;
+            
+            // Don't retry on authentication or permission errors
+            if (error.status === 401 || error.status === 403) {
+              reject(error);
+              return;
+            }
+            
+            // Exponential backoff for retries
+            if (attempt < retries) {
+              const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
+              await new Promise(resolve => setTimeout(resolve, delay));
+            }
+          } finally {
+            this.activeRequests--;
+            this.requestTimestamps.push(Date.now());
+          }
         }
+        
+        reject(lastError);
+        this.processQueue();
       };
 
       if (unshift) {
@@ -75,10 +102,6 @@ class RateLimiterQueue {
   }
 }
 
-const rateLimiter = new RateLimiterQueue(
-  isNaN(Number((import.meta as any).env.VITE_MAX_REQUESTS_PER_MINUTE))
-    ? 200
-    : Number((import.meta as any).env.VITE_MAX_REQUESTS_PER_MINUTE),
-);
+const rateLimiter = new RateLimiterQueue(envConfig.maxRequestsPerMinute);
 
 export default rateLimiter;

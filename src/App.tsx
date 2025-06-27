@@ -14,6 +14,11 @@ import { UnAuthHeader } from "./components/UnAuthHeader";
 import { Outlet, useNavigate } from "react-router";
 import { ConfigContext } from "./context/ConfigContext";
 import { darkTheme, lightTheme } from "./theme";
+import { TokenManager } from "./utils/tokenManager";
+import { usePersistentState, validators } from "./hooks/usePersistentState";
+import { ToastNotification } from "./components/ToastNotification";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { envConfig } from "./utils/environmentConfig";
 
 function App() {
   const [user, setUser] = React.useState<{
@@ -24,152 +29,172 @@ function App() {
   const [token, setToken] = React.useState<string>();
   const [octokit, setOctokit] = React.useState<GitService | null>(null);
   const [openSettings, setOpenSettings] = React.useState<boolean>(false);
-  const [isDarkMode, setIsDarkMode] = React.useState<boolean>(false);
+  
+  // Use persistent state hook for better state management
+  const [isDarkMode, setIsDarkMode] = usePersistentState('DARK_MODE', {
+    defaultValue: false,
+    validator: validators.isDarkMode,
+    storageType: 'localStorage'
+  });
+
+  const [repositorySettings, setRepositorySettings] = usePersistentState('REPOSITORY_CONFIG', {
+    defaultValue: {} as Record<string, boolean>,
+    validator: validators.repositorySettings,
+    storageType: 'localStorage'
+  });
+
+  // Toast notification state
+  const [toast, setToast] = React.useState<{
+    open: boolean;
+    message: string;
+    severity: 'error' | 'warning' | 'info' | 'success';
+  }>({
+    open: false,
+    message: '',
+    severity: 'info'
+  });
+
   const navigate = useNavigate();
+
+  const showToast = React.useCallback((message: string, severity: 'error' | 'warning' | 'info' | 'success' = 'info') => {
+    setToast({ open: true, message, severity });
+  }, []);
 
   const onLogin = React.useCallback(() => {
     if (token) {
       const octoKit = new GitService(
-        (import.meta as any).env.VITE_GITHUB_API_URL ||
-          "https://api.github.com",
+        envConfig.githubApiUrl,
         token
       );
       octoKit.testAuthentication().then((user) => {
         if (user.status !== 200) {
-          alert("Invalid token");
-
+          showToast("Invalid token. Please check your GitHub Personal Access Token.", "error");
           setUser(undefined);
           return;
         }
 
         setOctokit(octoKit);
         setUser(user.data);
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(user.data));
+        TokenManager.setToken(token);
+        TokenManager.setUserData(user.data);
         navigate("/");
+        showToast("Successfully logged in!", "success");
+      }).catch((error) => {
+        console.error("Authentication failed:", error);
+        showToast("Authentication failed. Please try again.", "error");
       });
     }
-  }, [token, navigate]);
+  }, [token, navigate, showToast]);
 
   React.useEffect(() => {
-    setToken(localStorage.getItem("token") ?? undefined);
-    setUser(JSON.parse(localStorage.getItem("user") || "{}"));
-    if (localStorage.getItem("token")) {
+    const storedToken = TokenManager.getToken();
+    const storedUser = TokenManager.getUserData();
+    
+    if (storedToken && storedUser) {
+      setToken(storedToken);
+      setUser(storedUser);
       setOctokit(
         new GitService(
-          (import.meta as any).env.VITE_GITHUB_API_URL ||
-            "https://api.github.com",
-          localStorage.getItem("token") || ""
+          envConfig.githubApiUrl,
+          storedToken
         )
       );
     }
-
-    setIsDarkMode(localStorage.getItem("DARK_MODE") === "true");
   }, []);
 
   const logOut = React.useCallback(() => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    TokenManager.clearToken();
     setUser(undefined);
     setOctokit(null);
     navigate("/login");
-  }, [navigate]);
+    showToast("Logged out successfully", "info");
+  }, [navigate, showToast]);
 
   const switchDarkMode = React.useCallback(() => {
     setIsDarkMode((prev) => !prev);
-    localStorage.setItem("DARK_MODE", (!isDarkMode).toString());
-  }, [isDarkMode]);
+  }, [setIsDarkMode]);
 
-  const [repositorySettings, setRepositorySettings] = React.useState<
-    Record<string, boolean>
-  >({});
   const handleRepositorySelect = React.useCallback(
     (repository: string, selected: boolean) => {
-      setRepositorySettings((prev) => {
-        const newState = { ...prev, [repository]: selected };
-        localStorage.setItem("REPOSITORY_CONFIG", JSON.stringify(newState));
-
-        return newState;
-      });
+      setRepositorySettings((prev) => ({ ...prev, [repository]: selected }));
     },
-    []
+    [setRepositorySettings]
   );
 
   const saveRawSettings = React.useCallback(
     (settings: Record<string, boolean> | undefined) => {
       if (!settings) return;
-
       setRepositorySettings(settings);
-      localStorage.setItem("REPOSITORY_CONFIG", JSON.stringify(settings));
     },
-    []
+    [setRepositorySettings]
   );
 
-  React.useEffect(() => {
-    const repositoryConfig = JSON.parse(
-      localStorage.getItem("REPOSITORY_CONFIG") ?? "{}"
-    );
-    setRepositorySettings(repositoryConfig);
-  }, []);
-
   return (
-    <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
-      <CssBaseline />
-      <ConfigContext.Provider
-        value={{
-          octokit,
-          repositorySettings,
-          handleRepositorySelect,
-          saveRawSettings,
-          user,
-        }}
-      >
-        <AppBar
-          position="static"
-          color="default"
-          sx={{ position: "fixed", zIndex: 100 }}
-        >
-          <Toolbar sx={{ justifyContent: "flex-end" }}>
-            {!user?.login ? (
-              <UnAuthHeader setToken={setToken} onLogin={onLogin} />
-            ) : (
-              <AuthHeader
-                user={user}
-                logOut={logOut}
-                setOpenSettings={setOpenSettings}
-                onThemeSwitch={switchDarkMode}
-                darkMode={isDarkMode}
-              />
-            )}
-          </Toolbar>
-        </AppBar>
-        <Box
-          component={"main"}
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-            justifyContent: "center",
-            alignItems: "center",
-            paddingTop: "4em",
+    <ErrorBoundary>
+      <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
+        <CssBaseline />
+        <ConfigContext.Provider
+          value={{
+            octokit,
+            repositorySettings,
+            handleRepositorySelect,
+            saveRawSettings,
+            user,
           }}
         >
-          <Box
-            padding={2}
-            width={"calc(100vw - 2em)"}
-            justifyContent={"center"}
+          <AppBar
+            position="static"
+            color="default"
+            sx={{ position: "fixed", zIndex: 100 }}
           >
-            <Outlet />
+            <Toolbar sx={{ justifyContent: "flex-end" }}>
+              {!user?.login ? (
+                <UnAuthHeader setToken={setToken} onLogin={onLogin} />
+              ) : (
+                <AuthHeader
+                  user={user}
+                  logOut={logOut}
+                  setOpenSettings={setOpenSettings}
+                  onThemeSwitch={switchDarkMode}
+                  darkMode={isDarkMode}
+                />
+              )}
+            </Toolbar>
+          </AppBar>
+          <Box
+            component={"main"}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+              justifyContent: "center",
+              alignItems: "center",
+              paddingTop: "4em",
+            }}
+          >
+            <Box
+              padding={2}
+              width={"calc(100vw - 2em)"}
+              justifyContent={"center"}
+            >
+              <Outlet />
+            </Box>
           </Box>
-        </Box>
-        {octokit && (
-          <SettingsDrawer
-            opened={openSettings}
-            onClose={() => setOpenSettings(false)}
+          {octokit && (
+            <SettingsDrawer
+              opened={openSettings}
+              onClose={() => setOpenSettings(false)}
+            />
+          )}
+          <ToastNotification
+            open={toast.open}
+            message={toast.message}
+            severity={toast.severity}
+            onClose={() => setToast(prev => ({ ...prev, open: false }))}
           />
-        )}
-      </ConfigContext.Provider>
-    </ThemeProvider>
+        </ConfigContext.Provider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

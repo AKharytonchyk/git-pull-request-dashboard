@@ -47,7 +47,11 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "lint:fix": "eslint --fix ."
+    "lint:fix": "eslint --fix .",
+    "type-check": "tsc --noEmit",
+    "analyze": "npx vite-bundle-analyzer",
+    "clean": "rm -rf dist node_modules/.vite",
+    "start": "npm run dev"
   },
   "browserslist": {
     "production": [

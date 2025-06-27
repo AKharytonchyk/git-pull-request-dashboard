@@ -3,6 +3,27 @@ import rateLimiter from "../utils/RateLimiterQueue";
 import { PullRequest } from "../models/PullRequest";
 import { Issue } from "../models/Issue";
 
+export class GitHubAPIError extends Error {
+  constructor(
+    message: string,
+    public status?: number,
+    public code?: string
+  ) {
+    super(message);
+    this.name = "GitHubAPIError";
+  }
+}
+
+export class RateLimitError extends Error {
+  constructor(
+    message: string,
+    public resetTime?: Date
+  ) {
+    super(message);
+    this.name = "RateLimitError";
+  }
+}
+
 export class GitService {
   private readonly octokit: Octokit;
   constructor(baseUrl: string, token: string) {
@@ -18,57 +39,81 @@ export class GitService {
     return rateLimiter.enqueue(() => this.octokit.pulls.list({ owner, repo }));
   }
 
-  async getPullRequests(repo: string) {
-    const [owner, name] = repo.split("/");
-    const response = this.getPulls(owner, name);
+  async getPullRequests(repo: string): Promise<PullRequest[]> {
+    try {
+      const [owner, name] = repo.split("/");
+      const response = await this.getPulls(owner, name);
 
-    return (await response).data
-      .map((pr) => pr as any as PullRequest)
-      .map((pr) => ({ ...pr, created_at: new Date(pr.created_at) }));
+      return response.data
+        .map((pr: any) => pr as PullRequest)
+        .map((pr) => ({ ...pr, created_at: new Date(pr.created_at) }));
+    } catch (error) {
+      this.handleAPIError(error);
+    }
   }
 
-  async getIssues(fullName: string) {
-    const [owner, name] = fullName.split("/");
-    const issues = await this.getRepoIssues(owner, name);
-    return issues.data?.length
-      ? issues.data
-          .filter(({ pull_request }) => !pull_request)
-          .map((issue) => issue as any as Issue)
-      : [];
+  async getIssues(fullName: string): Promise<Issue[]> {
+    try {
+      const [owner, name] = fullName.split("/");
+      const issues = await this.getRepoIssues(owner, name);
+      return issues.data?.length
+        ? issues.data
+            .filter(({ pull_request }: any) => !pull_request)
+            .map((issue: any) => issue as Issue)
+        : [];
+    } catch (error) {
+      this.handleAPIError(error);
+    }
   }
 
-  testAuthentication() {
-    return this.octokit.users.getAuthenticated();
+  testAuthentication(): Promise<any> {
+    try {
+      return this.octokit.users.getAuthenticated();
+    } catch (error) {
+      this.handleAPIError(error);
+    }
   }
 
-  getOrganizations() {
-    return rateLimiter.enqueue(() =>
-      this.octokit.orgs.listForAuthenticatedUser()
-    );
+  async getOrganizations(): Promise<any> {
+    try {
+      return await rateLimiter.enqueue(() =>
+        this.octokit.orgs.listForAuthenticatedUser()
+      );
+    } catch (error) {
+      this.handleAPIError(error);
+    }
   }
 
-  async getRepos(owner: string) {
-    const repos = await rateLimiter.enqueue(() =>
-      this.octokit.paginate(this.octokit.repos.listForOrg, {
-        org: owner,
-        type: "all",
-        per_page: 100,
-        timeout: 5000,
-      })
-    );
+  async getRepos(owner: string): Promise<any[]> {
+    try {
+      const repos = await rateLimiter.enqueue(() =>
+        this.octokit.paginate(this.octokit.repos.listForOrg, {
+          org: owner,
+          type: "all",
+          per_page: 100,
+          timeout: 5000,
+        })
+      );
 
-    return repos
-      .filter((repo) => !repo.archived)
-      .sort((a, b) => a.name.localeCompare(b.name));
+      return repos
+        .filter((repo: any) => !repo.archived)
+        .sort((a: any, b: any) => a.name.localeCompare(b.name));
+    } catch (error) {
+      this.handleAPIError(error);
+    }
   }
 
-  async getRepository(fullName: string) {
-    const [owner, name] = fullName.split("/");
-    const response = await rateLimiter.enqueue(() =>
-      this.octokit.repos.get({ owner, repo: name })
-    );
+  async getRepository(fullName: string): Promise<any> {
+    try {
+      const [owner, name] = fullName.split("/");
+      const response = await rateLimiter.enqueue(() =>
+        this.octokit.repos.get({ owner, repo: name })
+      );
 
-    return response.data;
+      return response.data;
+    } catch (error) {
+      this.handleAPIError(error);
+    }
   }
 
   async getStaredRepos() {
@@ -161,5 +206,25 @@ export class GitService {
         per_page: 100,
       })
     );
+  }
+
+  private handleAPIError(error: any): never {
+    if (error.status === 401) {
+      throw new GitHubAPIError("Invalid or expired GitHub token", 401, "UNAUTHORIZED");
+    } else if (error.status === 403) {
+      if (error.message.includes("rate limit")) {
+        const resetTime = error.response?.headers?.["x-ratelimit-reset"] 
+          ? new Date(parseInt(error.response.headers["x-ratelimit-reset"]) * 1000)
+          : undefined;
+        throw new RateLimitError("GitHub API rate limit exceeded", resetTime);
+      }
+      throw new GitHubAPIError("Access forbidden - check your token permissions", 403, "FORBIDDEN");
+    } else if (error.status === 404) {
+      throw new GitHubAPIError("Repository or resource not found", 404, "NOT_FOUND");
+    } else if (error.status >= 500) {
+      throw new GitHubAPIError("GitHub API server error", error.status, "SERVER_ERROR");
+    } else {
+      throw new GitHubAPIError(`GitHub API error: ${error.message}`, error.status);
+    }
   }
 }
