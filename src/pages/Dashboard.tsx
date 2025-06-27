@@ -19,14 +19,13 @@ import Grid from "@mui/material/Grid2";
 import LandingPage from "./LandingPage";
 import { InputFilter } from "../components/InputFilter";
 import { useQueries } from "@tanstack/react-query";
-import { Navigate } from "react-router";
 import PRLoadingPage from "./PRLoadingPage";
 import { PullRequestFilters } from "../components/Dashboard/PullRequestFilters";
 import { FilterList } from "@mui/icons-material";
 import SortIconOutlined from "@mui/icons-material/Sort";
 
 export const Dashboard: React.FC = () => {
-  const { octokit, repositorySettings } = React.useContext(ConfigContext);
+  const { octokit, repositorySettings, user } = React.useContext(ConfigContext);
   const [activeRepositories, setActiveRepositories] = React.useState<string[]>(
     []
   );
@@ -96,8 +95,9 @@ export const Dashboard: React.FC = () => {
     filteredPulls as PullRequest[]
   );
 
-  if (!localStorage.getItem("token")) {
-    return <Navigate to="/login" />;
+  // If no user or octokit is available, show the login page within this route
+  if (!user || !octokit) {
+    return <LandingPage />;
   }
 
   return (

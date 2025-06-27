@@ -6,15 +6,19 @@
     <meta name="theme-color" content="#000000" />
     <meta
       name="description"
-      content="Web site that displays GitHub PRs"
+      content="GitHub Pull Request Dashboard - Monitor PRs across multiple repositories"
     />
 
-    <link rel="web-app-manifest" href="/manifest.webappmanifest" />
+    <!-- Security Headers (CSP will be injected dynamically) -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
 
+    <link rel="web-app-manifest" href="/manifest.webappmanifest" />
     <link rel="apple-touch-icon" href="/logo192.png" />
     <link rel="icon" type="image/x-icon" sizes="16x16" href="/icon.svg" /> 
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GitHub PR Dashboard</title>
   </head>
   <body>

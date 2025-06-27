@@ -13,7 +13,32 @@ import { RepositoriesPage } from "./pages/RepositoriesPage";
 import IssuesPage from "./pages/IssuesPage";
 import { RepositoryItem } from "./pages/RepositoryItem";
 
-const queryClient = new QueryClient();
+// Import dynamic CSP injection (runs immediately)
+import "./utils/dynamicCSP";
+
+// Enhanced QueryClient configuration
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: (failureCount, error: any) => {
+        // Don't retry on 401/403 errors
+        if (error?.status === 401 || error?.status === 403) return false;
+        // Don't retry on rate limit errors
+        if (error?.status === 429) return false;
+        return failureCount < 3;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: (failureCount, error: any) => {
+        if (error?.status === 401 || error?.status === 403) return false;
+        return failureCount < 2;
+      },
+    },
+  },
+});
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement

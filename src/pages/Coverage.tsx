@@ -12,7 +12,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { Navigate } from "react-router";
+import LandingPage from "./LandingPage";
 import { ConfigContext } from "../context/ConfigContext";
 import ErrorMessage from "../components/MissingCoverageErrorMessage";
 import lz from "lz-string";
@@ -42,7 +42,7 @@ export const Coverage: React.FC = () => {
     [data]
   );
 
-  const { repositorySettings } = React.useContext(ConfigContext);
+  const { repositorySettings, user, octokit } = React.useContext(ConfigContext);
 
   const tableRows = React.useMemo(() => {
     if (!data) return [];
@@ -65,8 +65,8 @@ export const Coverage: React.FC = () => {
     return rows;
   }, [data, repositorySettings]);
 
-  if (!localStorage.getItem("token")) {
-    return <Navigate to="/login" />;
+  if (!user || !octokit) {
+    return <LandingPage />;
   }
 
   return (
