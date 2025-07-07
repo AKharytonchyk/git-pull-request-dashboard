@@ -150,8 +150,8 @@ export class EnvironmentConfig {
       "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
-      `connect-src 'self' ${githubApiUrl} https://${apiHost}`,
-      `img-src 'self' data: ${githubAvatarUrl} https://${avatarHost}`,
+      `connect-src 'self' ${githubApiUrl} https://${apiHost} https://api.simplesvg.com`,
+      `img-src 'self' data: ${githubAvatarUrl} https://${avatarHost} https://${apiHost} https://api.simplesvg.com`,
       `frame-ancestors 'none'`,
       `base-uri 'self'`
     ].join('; ');

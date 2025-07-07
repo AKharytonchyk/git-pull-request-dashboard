@@ -8,7 +8,7 @@ import {
   Stack,
 } from "@mui/material";
 import { LanguageIcon } from "../icons/LanguageIcon";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { getColorForDaysInReview } from "../../utils/getColorsForDaysInReview";
 import { DashboardCustomizeOutlined, Visibility } from "@mui/icons-material";
 import React from "react";
@@ -17,6 +17,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link as RouterLink } from "react-router";
 import { AsyncChip } from "../AsyncChip";
 import { useOnScreen } from "../../hooks/useOnScreen";
+import VulnerabilityIndicator from "../VulnerabilityIndicator";
 
 export type RepositoryCardProps = {
   name: string;
@@ -26,6 +27,8 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
   const { octokit } = React.useContext(ConfigContext);
   const ref = React.useRef<HTMLDivElement>(null);
   const isOnScreen = useOnScreen(ref);
+  const [isVulnerabilityExpanded, setIsVulnerabilityExpanded] = useState(false);
+  
   const enabled = useMemo(
     () => isOnScreen && octokit !== undefined && name !== undefined,
     [isOnScreen, octokit, name]
@@ -114,7 +117,28 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
         >
           <LanguageIcon language={repoData?.language} />
           <Typography variant="h6">{name}</Typography>
+
+          <Box sx={{ marginLeft: "auto" }}>
+            {repoData ? (
+              <VulnerabilityIndicator 
+                repositoryFullName={repoData.full_name} 
+                compact={true}
+                expanded={false}
+                onToggleExpanded={() => setIsVulnerabilityExpanded(!isVulnerabilityExpanded)}
+                showExpandButton={true}
+              />
+            ) : null}
+          </Box>
         </Box>
+        
+        {/* Expanded vulnerability details */}
+        {isVulnerabilityExpanded && repoData && (
+          <VulnerabilityIndicator 
+            repositoryFullName={repoData.full_name} 
+            compact={false}
+            expanded={true}
+          />
+        )}
         <Stack direction="row" justifyContent={"space-between"}>
           <Stack direction="row" alignItems={"center"}>
             <Stack

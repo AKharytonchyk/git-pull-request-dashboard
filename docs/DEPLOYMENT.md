@@ -83,7 +83,7 @@ server {
     root /path/to/dist;
     
     # Dynamic CSP header (replace with actual generated value)
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://ghe.acme.com/api/v3 https://ghe.acme.com; img-src 'self' data: https://avatars.ghe.acme.com; frame-ancestors 'none'; base-uri 'self'";
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://ghe.acme.com/api/v3 https://ghe.acme.com https://api.simplesvg.com; img-src 'self' data: https://avatars.ghe.acme.com https://api.simplesvg.com; frame-ancestors 'none'; base-uri 'self'";
     
     location / {
         try_files $uri $uri/ /index.html;
@@ -96,7 +96,7 @@ server {
 ```
 # _headers file for static deployments
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.github.com; img-src 'self' data: https://avatars.githubusercontent.com; frame-ancestors 'none'; base-uri 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://api.simplesvg.com; img-src 'self' data: https://avatars.githubusercontent.com https://api.simplesvg.com; frame-ancestors 'none'; base-uri 'self'
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
 ```
@@ -138,7 +138,7 @@ VITE_GITHUB_API_URL=https://api.github.com
 
 **Generated CSP:**
 ```
-Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.github.com; img-src 'self' data: https://avatars.githubusercontent.com; frame-ancestors 'none'; base-uri 'self'
+Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://api.simplesvg.com; img-src 'self' data: https://avatars.githubusercontent.com https://api.simplesvg.com; frame-ancestors 'none'; base-uri 'self'
 ```
 
 **Domains to Whitelist:**
@@ -157,7 +157,7 @@ VITE_GITHUB_BASE_URL=https://ghe.acme.com
 
 **Generated CSP:**
 ```
-Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://ghe.acme.com/api/v3 https://ghe.acme.com; img-src 'self' data: https://avatars.ghe.acme.com; frame-ancestors 'none'; base-uri 'self'
+Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://ghe.acme.com/api/v3 https://ghe.acme.com https://api.simplesvg.com; img-src 'self' data: https://avatars.ghe.acme.com https://api.simplesvg.com; frame-ancestors 'none'; base-uri 'self'
 ```
 
 **Domains to Whitelist:**

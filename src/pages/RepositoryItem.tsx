@@ -6,6 +6,7 @@ import PullRequestCard from "../components/Cards/PullRequestCard";
 import { IssueCard } from "../components/Cards/IssueCard";
 import { Grid2, Stack, Tab, Tabs, Tooltip, Typography } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import VulnerabilityIndicator from "../components/VulnerabilityIndicator";
 
 export const RepositoryItem: React.FC = () => {
   const { octokit } = React.useContext(ConfigContext);
@@ -44,13 +45,17 @@ export const RepositoryItem: React.FC = () => {
 
   return (
     <div>
-      <Stack direction="row" gap={1} alignItems="baseline">
+      <Stack direction="row" gap={1} alignItems="baseline" sx={{ mb: 2 }}>
         <Tooltip title="Back to repositories">
           <Link to="/repositories">
             <ArrowBackIcon />
           </Link>
         </Tooltip>
         <Typography variant="h4">{fullName}</Typography>
+        <VulnerabilityIndicator 
+          repositoryFullName={fullName} 
+          compact={false}
+        />
       </Stack>
       <Tabs value={value} onChange={handleTabChange}>
         <Tab
