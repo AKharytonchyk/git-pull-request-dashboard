@@ -15,9 +15,19 @@ The GitHub PR Dashboard is a comprehensive tool designed to streamline the monit
 ## Features
 
 - **Secure GitHub Integration**: Securely connect using GitHub Personal Access Tokens (PAT) with enhanced token management and automatic expiration.
+- **Comprehensive Repository Access**: Access all repositories you have permissions for, including:
+  - Public and private repositories you own
+  - Private repositories you collaborate on
+  - Organization repositories (both public and private)
+  - Repositories you have access to through team memberships
 - **Organization and Repository Selection**: Choose which organizations and repositories you want to monitor within the dashboard.
 - **Pull Request Overview**: Get a consolidated view of all pull requests across your selected repositories.
 - **Issue Overview**: Get a consolidated view of all issues across your selected repositories and organizations.
+- **Security Vulnerability Monitoring**: Monitor Dependabot security alerts across repositories with:
+  - Real-time vulnerability counts by severity (Critical, High, Medium, Low)
+  - Direct links to GitHub security pages for remediation
+  - Support for both GitHub.com and GitHub Enterprise instances
+  - Lazy loading and caching for optimal performance
 - **Dark Mode**: Toggle between light and dark themes with persistent user preferences.
 - **Settings Management**: Easily manage your settings within the app. Setting sharing is now available via raw setting toggle.
 - **Repository Focus View**: Access repository view and navigate to see PRs and Issues for this particular repository.

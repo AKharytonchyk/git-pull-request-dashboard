@@ -133,14 +133,41 @@ export class GitService {
     );
   }
 
-  async getUserRepos() {
-    return rateLimiter.enqueue(() =>
+  /**
+   * Get repositories for authenticated user with configurable options
+   * @param options Configuration options for repository fetching
+   */
+  async getUserRepositories(options: {
+    type?: 'all' | 'owner' | 'public' | 'private' | 'member';
+    visibility?: 'all' | 'public' | 'private';
+    affiliation?: string;
+    sort?: 'created' | 'updated' | 'pushed' | 'full_name';
+    direction?: 'asc' | 'desc';
+    includeArchived?: boolean;
+  } = {}) {
+    const {
+      type = 'all',
+      visibility = 'all',
+      affiliation = 'owner,collaborator,organization_member',
+      sort = 'updated',
+      direction = 'desc',
+      includeArchived = false
+    } = options;
+
+    const repos = await rateLimiter.enqueue(() =>
       this.octokit.paginate(this.octokit.repos.listForAuthenticatedUser, {
         per_page: 100,
         timeout: 5000,
-        type: "owner",
+        type,
+        visibility,
+        affiliation,
+        sort,
+        direction,
       })
     );
+
+    // Filter out archived repositories if not requested
+    return includeArchived ? repos : repos.filter((repo: any) => !repo.archived);
   }
 
   async getPRChecksStatus(owner: string, repo: string, prNumber: number) {
