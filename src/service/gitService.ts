@@ -170,6 +170,19 @@ export class GitService {
     return includeArchived ? repos : repos.filter((repo: any) => !repo.archived);
   }
 
+  /**
+   * Get repositories for authenticated user (backward compatibility wrapper)
+   * @deprecated Use getUserRepositories() for more configuration options
+   */
+  async getUserRepos() {
+    return this.getUserRepositories({
+      type: 'all',
+      visibility: 'all',
+      affiliation: 'owner,collaborator,organization_member',
+      includeArchived: false
+    });
+  }
+
   async getPRChecksStatus(owner: string, repo: string, prNumber: number) {
     return rateLimiter.enqueue(
       () =>
