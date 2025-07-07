@@ -11,13 +11,24 @@ The GitHub PR Dashboard is a comprehensive tool designed to streamline the monit
 - 📖 [Deployment Guide](docs/DEPLOYMENT.md) - Production deployment and CSP configuration
 - 🔒 [Security Guidelines](docs/SECURITY.md) - Token management and security best practices  
 - ⚡ [Performance Guidelines](docs/PERFORMANCE.md) - Optimization and caching strategies
+- 🛡️ [Dependabot Integration](docs/DEPENDABOT_INTEGRATION.md) - Security vulnerability monitoring setup and usage
 
 ## Features
 
 - **Secure GitHub Integration**: Securely connect using GitHub Personal Access Tokens (PAT) with enhanced token management and automatic expiration.
+- **Comprehensive Repository Access**: Access all repositories you have permissions for, including:
+  - Public and private repositories you own
+  - Private repositories you collaborate on
+  - Organization repositories (both public and private)
+  - Repositories you have access to through team memberships
 - **Organization and Repository Selection**: Choose which organizations and repositories you want to monitor within the dashboard.
 - **Pull Request Overview**: Get a consolidated view of all pull requests across your selected repositories.
 - **Issue Overview**: Get a consolidated view of all issues across your selected repositories and organizations.
+- **Security Vulnerability Monitoring**: Monitor Dependabot security alerts across repositories with:
+  - Real-time vulnerability counts by severity (Critical, High, Medium, Low)
+  - Direct links to GitHub security pages for remediation
+  - Support for both GitHub.com and GitHub Enterprise instances
+  - Lazy loading and caching for optimal performance
 - **Dark Mode**: Toggle between light and dark themes with persistent user preferences.
 - **Settings Management**: Easily manage your settings within the app. Setting sharing is now available via raw setting toggle.
 - **Repository Focus View**: Access repository view and navigate to see PRs and Issues for this particular repository.
@@ -46,9 +57,17 @@ The GitHub PR Dashboard is a comprehensive tool designed to streamline the monit
 
 ### Repository Dashboard
 
-![Repository](docs/images/repo.png)
-![Repository](docs/images/repo-pr.png)
-![Repository](docs/images/repo-issues.png)
+![Repository Overview](docs/images/RepoView.png)
+![Repository PRs](docs/images/repo-pr.png)
+![Repository Issues](docs/images/repo-issues.png)
+
+### Security Vulnerability Monitoring
+
+<!-- Placeholder: Add screenshot of repository cards showing vulnerability indicators -->
+*Please add screenshot showing repository cards with vulnerability indicators (Critical/High/Medium/Low chips)*
+
+<!-- Placeholder: Add screenshot of expanded vulnerability details -->
+*Please add screenshot showing expanded vulnerability details with clickable severity chips*
 
 ## Getting Started
 
@@ -103,6 +122,7 @@ This application implements enterprise-grade security and performance optimizati
 - 🔒 **[Security Guidelines](docs/SECURITY.md)** - Token security, CSP configuration, and best practices
 - ⚡ **[Performance Guidelines](docs/PERFORMANCE.md)** - Caching strategies, optimization techniques, and monitoring
 - 🚀 **[Deployment Guide](docs/DEPLOYMENT.md)** - Production deployment with dynamic CSP and environment configuration
+- 🛡️ **[Dependabot Integration](docs/DEPENDABOT_INTEGRATION.md)** - Complete guide to security vulnerability monitoring
 
 ## Environment Configuration
 
@@ -207,6 +227,7 @@ VITE_MAX_REQUESTS_PER_MINUTE=500
 - 📖 [Deployment Guide](docs/DEPLOYMENT.md) for production setup
 - 🔒 [Security Guidelines](docs/SECURITY.md) for token and security issues
 - ⚡ [Performance Guidelines](docs/PERFORMANCE.md) for performance optimization
+- 🛡️ [Dependabot Integration](docs/DEPENDABOT_INTEGRATION.md) for vulnerability monitoring setup
 
 ## Contributing
 

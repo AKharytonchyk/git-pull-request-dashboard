@@ -53,12 +53,12 @@ const csp = envConfig.generateCSP();
 
 **For GitHub.com (default):**
 ```
-Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.github.com; img-src 'self' data: https://avatars.githubusercontent.com; frame-ancestors 'none'; base-uri 'self'
+Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://api.simplesvg.com; img-src 'self' data: https://avatars.githubusercontent.com https://api.simplesvg.com; frame-ancestors 'none'; base-uri 'self'
 ```
 
 **For GitHub Enterprise Server (e.g., ACME Corporation):**
 ```
-Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://ghe.acme.com/api/v3 https://ghe.acme.com; img-src 'self' data: https://avatars.ghe.acme.com; frame-ancestors 'none'; base-uri 'self'
+Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://ghe.acme.com/api/v3 https://ghe.acme.com https://api.simplesvg.com; img-src 'self' data: https://avatars.ghe.acme.com https://api.simplesvg.com; frame-ancestors 'none'; base-uri 'self'
 ```
 
 **Environment Configuration:**

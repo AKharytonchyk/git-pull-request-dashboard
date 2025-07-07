@@ -49,6 +49,9 @@
     "preview": "vite preview",
     "lint:fix": "eslint --fix .",
     "type-check": "tsc --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "analyze": "npx vite-bundle-analyzer",
     "clean": "rm -rf dist node_modules/.vite",
     "start": "npm run dev"
