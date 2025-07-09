@@ -65,8 +65,8 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
   });
 
   const oldestPr = useMemo(() => {
-    return pulls
-      ?.filter(({ draft }) => !draft)
+    return (pulls ?? [])
+      .filter(({ draft }) => !draft)
       .sort(
         (prA, prB) => prA.created_at.getTime() - prB.created_at.getTime()
       )[0];
