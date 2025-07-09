@@ -28,7 +28,7 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
   const ref = React.useRef<HTMLDivElement>(null);
   const isOnScreen = useOnScreen(ref);
   const [isVulnerabilityExpanded, setIsVulnerabilityExpanded] = useState(false);
-  
+
   const enabled = useMemo(
     () => isOnScreen && octokit !== undefined && name !== undefined,
     [isOnScreen, octokit, name]
@@ -65,9 +65,11 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
   });
 
   const oldestPr = useMemo(() => {
-    return pulls?.sort(
-      (prA, prB) => prA.created_at.getTime() - prB.created_at.getTime()
-    )[0];
+    return (pulls ?? [])
+      .filter(({ draft }) => !draft)
+      .sort(
+        (prA, prB) => prA.created_at.getTime() - prB.created_at.getTime()
+      )[0];
   }, [pulls]);
 
   const badgeColor = useMemo(
@@ -120,21 +122,23 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
 
           <Box sx={{ marginLeft: "auto" }}>
             {repoData ? (
-              <VulnerabilityIndicator 
-                repositoryFullName={repoData.full_name} 
+              <VulnerabilityIndicator
+                repositoryFullName={repoData.full_name}
                 compact={true}
                 expanded={false}
-                onToggleExpanded={() => setIsVulnerabilityExpanded(!isVulnerabilityExpanded)}
+                onToggleExpanded={() =>
+                  setIsVulnerabilityExpanded(!isVulnerabilityExpanded)
+                }
                 showExpandButton={true}
               />
             ) : null}
           </Box>
         </Box>
-        
+
         {/* Expanded vulnerability details */}
         {isVulnerabilityExpanded && repoData && (
-          <VulnerabilityIndicator 
-            repositoryFullName={repoData.full_name} 
+          <VulnerabilityIndicator
+            repositoryFullName={repoData.full_name}
             compact={false}
             expanded={true}
           />
