@@ -27,7 +27,8 @@ spec:
             - --redirect-url=https://pullrequests.magmamoose.com/oauth2/callback
             - --reverse-proxy=true
             - --cookie-secure=true
-            - --cookie-domain=.magmamoose.com
+            - --cookie-name=_pullrequests_oauth2_proxy
+            - --cookie-domain=pullrequests.magmamoose.com
             - --whitelist-domain=.magmamoose.com
             - --skip-provider-button=true
           env:
