@@ -1,0 +1,31 @@
+name: Release
+
+# Diatreme TBD — mono-environment (solo). On push to main: semantic-release
+# (npm) computes the next version from conventional commits, tags it, updates
+# CHANGELOG.md + a GitHub Release, then promotes the pr-<N> image to the
+# version tag (no rebuild). Flux's ImagePolicy in the infra repo selects the
+# new vX.Y.Z tag and bumps k8s/overlays/prod.
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**.md', '.gitignore', 'LICENSE', 'CHANGELOG.md']
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - uses: magmamoose/diatreme@d0706e1f21c7dd5fe8e1067ca7b1a5c042d56c1d # v1.30.0
+        with:
+          mode: release
+          # Node/JS project — use semantic-release v24 (not the python default).
+          versioning-tool: semantic-release-npm
+          # Single environment: only `prod` exists.
+          environment: prod
+          environments: '["prod"]'
+          prerelease-identifiers: '{}'
+          image_name: git-pull-request-dashboard
+          platforms: linux/amd64,linux/arm64

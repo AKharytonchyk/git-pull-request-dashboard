@@ -1,0 +1,54 @@
+name: CI
+
+# Diatreme TBD — build + push the pr-<N> image on PRs (mode: ci). The image
+# build runs the Dockerfile (npm ci + vite build) via docker-bake, so it is
+# also the build/typecheck signal. Security/lint is handled by the Chargate
+# gate (security.yml) with net-new gating.
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      pull-requests: read
+    steps:
+      # Only build a pr-<N> image when the PR touches what ends up in the
+      # image. Doc-only / k8s-only PRs leave `build` a green no-op.
+      - name: Detect image-relevant changes
+        id: filter
+        uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3.0.3
+        with:
+          filters: |
+            image:
+              - 'src/**'
+              - 'public/**'
+              - 'index.html'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'vite.config.ts'
+              - 'tsconfig*.json'
+              - 'Dockerfile'
+              - 'nginx.conf'
+              - 'docker-bake.hcl'
+              - '.github/workflows/ci.yml'
+
+      - name: Skip build — no image-relevant changes
+        if: steps.filter.outputs.image != 'true'
+        run: echo "PR touches only files outside the image build context; skipping pr-<N> build."
+
+      - uses: magmamoose/diatreme@d0706e1f21c7dd5fe8e1067ca7b1a5c042d56c1d # v1.30.0
+        if: steps.filter.outputs.image == 'true'
+        with:
+          mode: ci
+          image_name: git-pull-request-dashboard
+          platforms: linux/amd64,linux/arm64
+          github-token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json.schemastore.org/semantic-release",
+  "_comment": "semantic-release (npm) v24 configuration for the Diatreme TBD pipeline.",
+
+  "tagFormat": "v${version}",
+
+  "branches": [
+    "main"
+  ],
+
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/changelog",
+      {
+        "changelogFile": "CHANGELOG.md"
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": ["CHANGELOG.md"],
+        "message": "chore(release): v${nextRelease.version}"
+      }
+    ],
+    "@semantic-release/github"
+  ]
+}
