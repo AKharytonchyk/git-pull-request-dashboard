@@ -1,3 +1,8 @@
+---
+# kics-scan disable=3d658f8b-d988-41a0-a841-40043121de1e
+# Disables KICS "Secrets As Environment Variables" — the OAuth client creds
+# and session secret are read by server/index.mjs from process.env at boot,
+# and secretKeyRef is the recommended k8s pattern for injecting them.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -53,10 +58,6 @@ spec:
           # Tag is pinned + bumped by Flux image automation in overlays/prod.
           image: ghcr.io/magmamoose/git-pull-request-dashboard:latest
           imagePullPolicy: Always
-          # kics-scan ignore-block
-          # OAuth client creds + session secret are injected via secretKeyRef
-          # because server/index.mjs reads them from process.env at boot;
-          # secretKeyRef is the recommended k8s pattern for this shape.
           env:
             - name: APP_BASE_URL
               value: https://pullrequests.magmamoose.com
