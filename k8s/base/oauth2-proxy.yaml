@@ -24,11 +24,11 @@ spec:
             # Full-proxy mode fronting the static dashboard. Public .co traffic
             # arrives via the cloudflared tunnel (tunnels.tf) -> this Service.
             - --upstream=http://git-pull-request-dashboard.automation.svc.cluster.local:80
-            - --redirect-url=https://pr-dashboard.sargeant.co/oauth2/callback
+            - --redirect-url=https://pullrequests.magmamoose.com/oauth2/callback
             - --reverse-proxy=true
             - --cookie-secure=true
-            - --cookie-domain=.sargeant.co
-            - --whitelist-domain=.sargeant.co
+            - --cookie-domain=.magmamoose.com
+            - --whitelist-domain=.magmamoose.com
             - --skip-provider-button=true
           env:
             - name: OAUTH2_PROXY_CLIENT_ID
