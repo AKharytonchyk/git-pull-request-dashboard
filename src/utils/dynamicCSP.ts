@@ -98,15 +98,15 @@ function generateDynamicCSP(apiUrl: string, avatarUrl: string): string {
   // For GHE, also allow GitHub.com avatars as fallback since GHE avatars often require auth
   const isGHE = apiHost !== 'api.github.com';
   const avatarSources = isGHE 
-    ? `${avatarUrl} https://${apiHost} https://${avatarHost} https://avatars.githubusercontent.com https://github.com`
-    : `${avatarUrl} https://${apiHost} https://${avatarHost}`;
+    ? `${avatarUrl} https://${apiHost} https://${avatarHost} https://avatars.githubusercontent.com https://github.com https://*.ghe.com https://*.githubusercontent.com`
+    : `${avatarUrl} https://${apiHost} https://${avatarHost} https://*.ghe.com https://*.githubusercontent.com`;
   
   return [
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline'",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
-    `connect-src 'self' ${apiUrl} https://${apiHost} https://api.simplesvg.com https://api.iconify.design`,
+    `connect-src 'self' ${apiUrl} https://${apiHost} https://api.github.com https://*.ghe.com https://api.simplesvg.com https://api.iconify.design`,
     `img-src 'self' data: ${avatarSources} https://api.simplesvg.com https://api.iconify.design`,
     "base-uri 'self'"
   ].join('; ');

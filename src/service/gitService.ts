@@ -32,11 +32,15 @@ export class RateLimitError extends Error {
 export class GitService {
   private readonly octokit: Octokit;
   private readonly baseUrl: string;
+  private readonly webBaseUrl?: string;
   
-  constructor(baseUrl: string, token: string) {
+  constructor(baseUrl: string, token?: string, webBaseUrl?: string) {
     this.baseUrl = !baseUrl.endsWith("/")
       ? baseUrl
       : baseUrl.substring(0, baseUrl.length - 1);
+    this.webBaseUrl = webBaseUrl
+      ? webBaseUrl.replace(/\/+$/, "")
+      : undefined;
     this.octokit = new Octokit({
       baseUrl: this.baseUrl,
       auth: token,
@@ -427,12 +431,20 @@ export class GitService {
    * For GHE: ghe.example.com/api/v3 -> ghe.example.com
    */
   getBaseWebUrl(): string {
+    if (this.webBaseUrl) {
+      return this.webBaseUrl;
+    }
+
     try {
       const url = new URL(this.baseUrl);
       
       // For GitHub.com
       if (url.hostname === 'api.github.com') {
         return 'https://github.com';
+      }
+
+      if (url.hostname.endsWith('.ghe.com') && url.hostname.startsWith('api.')) {
+        return `https://${url.hostname.replace(/^api\./, '')}`;
       }
       
       // For GitHub Enterprise - remove /api/v3 path if present

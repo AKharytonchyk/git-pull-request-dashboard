@@ -8,13 +8,11 @@ import { PullRequestIcon } from "./icons/PullRequestIcon";
 import { RepositoryIcon } from "./icons/RepositoryIcon";
 import { IssuesIcon } from "./icons/IssuesIcon";
 import { ThemeSwitch } from "./ThemeSwitch";
+import { AuthenticatedUser, AuthProvider } from "../models/Auth";
 
 export type AuthHeaderProps = {
-  user: {
-    login: string;
-    avatar_url: string;
-    url: string;
-  };
+  user: AuthenticatedUser;
+  provider?: AuthProvider;
   logOut: () => void;
   setOpenSettings: (value: boolean) => void;
   onThemeSwitch: () => void;
@@ -23,6 +21,7 @@ export type AuthHeaderProps = {
 
 export const AuthHeader: React.FC<AuthHeaderProps> = ({
   user,
+  provider,
   logOut,
   setOpenSettings,
   onThemeSwitch,
@@ -97,8 +96,16 @@ export const AuthHeader: React.FC<AuthHeaderProps> = ({
         <Avatar alt={user?.login} src={user?.avatar_url} sx={{ mr: 2 }} />
         <Chip
           label={user?.login}
-          onClick={() => window.open(user?.url, "_blank")}
+          onClick={() => window.open(user?.html_url ?? user?.url, "_blank")}
         />
+        {provider?.host && (
+          <Chip
+            label={provider.host}
+            variant="outlined"
+            size="small"
+            onClick={() => window.open(provider.webUrl, "_blank")}
+          />
+        )}
         <Button
           variant="text"
           color="inherit"

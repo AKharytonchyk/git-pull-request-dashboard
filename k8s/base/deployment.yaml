@@ -27,20 +27,48 @@ spec:
         - name: ghcr-pull-secret
       containers:
         - name: git-pull-request-dashboard
-          # nginx-unprivileged serves the static Vite/React bundle on :8080.
+          # Node serves the static Vite/React bundle and GitHub OAuth endpoints
+          # on :8080.
           # Tag is pinned + bumped by Flux image automation in overlays/prod.
           image: ghcr.io/magmamoose/git-pull-request-dashboard:latest
           imagePullPolicy: Always
+          env:
+            - name: APP_BASE_URL
+              value: https://pullrequests.magmamoose.com
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: github-oauth
+                  key: session-secret
+                  optional: true
+            - name: GITHUB_OAUTH_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: github-oauth
+                  key: github-client-id
+                  optional: true
+            - name: GITHUB_OAUTH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: github-oauth
+                  key: github-client-secret
+                  optional: true
+            - name: GHE_OAUTH_APPS
+              valueFrom:
+                secretKeyRef:
+                  name: github-oauth
+                  key: ghe-oauth-apps
+                  optional: true
           ports:
             - name: http
               containerPort: 8080
           resources:
             requests:
-              cpu: 5m
-              memory: 16Mi
+              cpu: 10m
+              memory: 64Mi
             limits:
               cpu: 100m
-              memory: 64Mi
+              memory: 256Mi
           readinessProbe:
             httpGet:
               path: /

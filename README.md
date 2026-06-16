@@ -15,7 +15,7 @@ The GitHub PR Dashboard is a comprehensive tool designed to streamline the monit
 
 ## Features
 
-- **Secure GitHub Integration**: Securely connect using GitHub Personal Access Tokens (PAT) with enhanced token management and automatic expiration.
+- **Secure GitHub Integration**: Sign in with a GitHub OAuth App for GitHub.com, GitHub Enterprise Server, or GHE.com tenants, with PAT login kept as an optional fallback.
 - **Comprehensive Repository Access**: Access all repositories you have permissions for, including:
   - Public and private repositories you own
   - Private repositories you collaborate on
@@ -77,7 +77,8 @@ Follow these instructions to get your GitHub PR Dashboard up and running on your
 
 - Node.js (latest stable version)
 - A GitHub account
-- A generated GitHub Personal Access Token with `repo` and `read:org` permissions
+- For OAuth login, a GitHub OAuth App with callback URL `https://YOUR_APP_HOST/api/auth/github/callback`
+- For local fallback login, a GitHub token with `repo` and `read:org` permissions
 
 ### Installation
 
@@ -115,6 +116,14 @@ Follow these instructions to get your GitHub PR Dashboard up and running on your
 
    This will run the app in development mode. Open [http://localhost:5173](http://localhost:5173) to view it in the browser.
 
+   To test the OAuth-capable runtime locally, configure OAuth env vars and run:
+
+   ```bash
+   npm run dev:oauth
+   ```
+
+   Register `http://localhost:8080/api/auth/github/callback` as the local OAuth callback URL.
+
 ## Security and Performance
 
 This application implements enterprise-grade security and performance optimizations. For detailed information, see:
@@ -140,6 +149,16 @@ cp .env.example .env.local
 | `VITE_GITHUB_AVATAR_URL` | Auto-detected | GitHub avatar URL (optional - auto-detected from API URL) |
 | `VITE_GITHUB_BASE_URL` | Auto-detected | GitHub base URL (optional - auto-detected from API URL) |
 | `VITE_MAX_REQUESTS_PER_MINUTE` | `200` | Rate limit for API requests (1-5000) |
+| `VITE_ENABLE_PAT_LOGIN` | `true` | Set to `false` to hide the token fallback login control |
+| `APP_BASE_URL` | `http://localhost:8080` | Public app origin used for OAuth callback URLs |
+| `SESSION_SECRET` | Generated at boot | Secret used to encrypt OAuth session cookies. Set a stable value in production |
+| `GITHUB_OAUTH_CLIENT_ID` | None | OAuth App client ID for GitHub.com |
+| `GITHUB_OAUTH_CLIENT_SECRET` | None | OAuth App client secret for GitHub.com |
+| `GITHUB_OAUTH_SCOPES` | `repo read:org user:email security_events` | OAuth scopes requested for GitHub.com |
+| `GHE_HOST` | None | Optional single GitHub Enterprise host |
+| `GHE_OAUTH_CLIENT_ID` | None | OAuth App client ID for `GHE_HOST` |
+| `GHE_OAUTH_CLIENT_SECRET` | None | OAuth App client secret for `GHE_HOST` |
+| `GHE_OAUTH_APPS` | None | JSON map of enterprise hosts to OAuth app config for multi-enterprise deployments |
 
 ### Examples
 
@@ -147,22 +166,28 @@ cp .env.example .env.local
 ```env
 VITE_GITHUB_API_URL=https://api.github.com
 VITE_MAX_REQUESTS_PER_MINUTE=200
+APP_BASE_URL=https://pullrequests.example.com
+SESSION_SECRET=replace-with-openssl-rand-hex-32
+GITHUB_OAUTH_CLIENT_ID=your-client-id
+GITHUB_OAUTH_CLIENT_SECRET=your-client-secret
 ```
 
-**ACME GitHub Enterprise:**
+**GHE.com tenant, such as pinkroccade.ghe.com:**
+```env
+APP_BASE_URL=https://pullrequests.example.com
+SESSION_SECRET=replace-with-openssl-rand-hex-32
+GHE_OAUTH_APPS={"pinkroccade.ghe.com":{"clientId":"your-client-id","clientSecret":"your-client-secret","apiUrl":"https://api.pinkroccade.ghe.com","webUrl":"https://pinkroccade.ghe.com"}}
+```
+
+**GitHub Enterprise Server:**
 ```env
 VITE_GITHUB_API_URL=https://ghe.acme.com/api/v3
 VITE_GITHUB_AVATAR_URL=https://avatars.ghe.acme.com
 VITE_GITHUB_BASE_URL=https://ghe.acme.com
 VITE_MAX_REQUESTS_PER_MINUTE=300
-```
-
-**GitHub Enterprise Server:**
-```env
-VITE_GITHUB_API_URL=https://ghe.your-company.com/api/v3
-VITE_GITHUB_AVATAR_URL=https://avatars.ghe.your-company.com
-VITE_GITHUB_BASE_URL=https://ghe.your-company.com
-VITE_MAX_REQUESTS_PER_MINUTE=300
+GHE_HOST=ghe.acme.com
+GHE_OAUTH_CLIENT_ID=your-client-id
+GHE_OAUTH_CLIENT_SECRET=your-client-secret
 ```
 
 **High-traffic deployment:**
@@ -179,19 +204,20 @@ VITE_MAX_REQUESTS_PER_MINUTE=500
 
 ## How to Use
 
-### Setting Up Your Personal Access Token
+### Setting Up GitHub OAuth
 
-1. Log in to your GitHub account.
-2. Navigate to Settings > Developer settings > Personal access tokens > Generate new token.
-3. Select `repo` and `read:org` scopes.
-4. Generate the token and copy it.
+1. Create a GitHub OAuth App on GitHub.com or on the enterprise host you want to support.
+2. Set the authorization callback URL to `https://YOUR_APP_HOST/api/auth/github/callback`.
+3. Configure the matching client ID and client secret in the runtime environment.
+4. For GHE.com data-residency tenants, configure the REST API as `https://api.SUBDOMAIN.ghe.com`.
 
-**Security Note**: Your token is stored securely in session storage with automatic expiration for enhanced security.
+**Security Note**: OAuth access tokens are stored in encrypted HttpOnly cookies and GitHub API calls are proxied by the app runtime. PAT fallback tokens still use browser session storage and expire automatically.
 
 ### Connecting Your GitHub Account
 
-- On the GitHub PR Dashboard, enter your PAT and connect your GitHub account.
-- The application will validate your token and provide feedback on successful authentication.
+- Choose GitHub.com or GitHub Enterprise in the header.
+- For enterprise login, enter the enterprise host, for example `pinkroccade.ghe.com`.
+- Click **Log in with GitHub** and authorize the OAuth app.
 - Your authentication session will automatically expire for security purposes.
 
 ### Selecting Repositories
@@ -203,14 +229,16 @@ VITE_MAX_REQUESTS_PER_MINUTE=500
 ### Common Issues
 
 **Authentication Failures**
-- Verify your token has the correct permissions (`repo` and `read:org`)
-- Check if your token has expired
+- Verify the OAuth callback URL exactly matches `APP_BASE_URL` plus `/api/auth/github/callback`
+- Verify OAuth credentials exist for the selected GitHub host
+- For GHE.com, use `https://api.SUBDOMAIN.ghe.com` as the API URL
+- If using PAT fallback, verify the token has the correct permissions (`repo` and `read:org`)
 - Ensure you're connected to the internet
 
 **No Pull Requests Showing**
 - Confirm you've selected repositories in the settings
 - Check if the repositories have any open pull requests
-- Verify your token has access to the selected repositories
+- Verify your OAuth account or fallback token has access to the selected repositories
 
 **Rate Limiting**
 - The application automatically handles GitHub API rate limits
