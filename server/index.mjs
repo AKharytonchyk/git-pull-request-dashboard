@@ -241,7 +241,16 @@ function oauthAppConfig() {
   }
 
   if (process.env.GHE_OAUTH_APPS) {
-    const configuredApps = JSON.parse(process.env.GHE_OAUTH_APPS);
+    let configuredApps;
+    try {
+      configuredApps = JSON.parse(process.env.GHE_OAUTH_APPS);
+    } catch (error) {
+      console.error(
+        "Failed to parse GHE_OAUTH_APPS as JSON; ignoring it. Error:",
+        error.message
+      );
+      return apps;
+    }
     Object.entries(configuredApps).forEach(([host, config]) => {
       apps.set(normalizeHost(host), {
         apiUrl: config.apiUrl ?? config.api_url,
@@ -347,7 +356,13 @@ async function handleOAuthStart(req, res, url) {
     return;
   }
 
-  const redirectTo = url.searchParams.get("redirect") || "/#/";
+  const requestedRedirect = url.searchParams.get("redirect") || "/#/";
+  const redirectTo =
+    requestedRedirect.startsWith("/") &&
+    !requestedRedirect.startsWith("//") &&
+    !requestedRedirect.startsWith("/\\")
+      ? requestedRedirect
+      : "/#/";
   const state = encodeSignedPayload({
     nonce: crypto.randomUUID(),
     providerHost: provider.host,
@@ -487,7 +502,7 @@ async function handleGitHubProxy(req, res, url) {
     return;
   }
 
-  const upstreamPath = url.pathname.replace(/^\/api\/github/, "") || "/";
+  const upstreamPath = url.pathname.replace(/^\/api\/github\/?/, "/") || "/";
   const upstreamUrl = `${joinUrl(session.provider.apiUrl, upstreamPath)}${url.search}`;
   const headers = new Headers();
 
@@ -512,9 +527,10 @@ async function handleGitHubProxy(req, res, url) {
   });
 
   upstreamResponse.headers.forEach((value, name) => {
-    if (!hopByHopHeaders.has(name.toLowerCase())) {
-      res.setHeader(name, value);
-    }
+    const lower = name.toLowerCase();
+    if (hopByHopHeaders.has(lower)) return;
+    if (lower === "set-cookie" || lower === "set-cookie2") return;
+    res.setHeader(name, value);
   });
   res.writeHead(upstreamResponse.status);
 
@@ -594,7 +610,7 @@ async function handleRequest(req, res) {
       return;
     }
 
-    if (url.pathname.startsWith("/api/github")) {
+    if (url.pathname === "/api/github" || url.pathname.startsWith("/api/github/")) {
       await handleGitHubProxy(req, res, url);
       return;
     }
