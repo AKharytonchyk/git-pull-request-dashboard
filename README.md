@@ -172,11 +172,11 @@ GITHUB_OAUTH_CLIENT_ID=your-client-id
 GITHUB_OAUTH_CLIENT_SECRET=your-client-secret
 ```
 
-**GHE.com tenant, such as pinkroccade.ghe.com:**
+**GHE.com tenant, such as your-tenant.ghe.com:**
 ```env
 APP_BASE_URL=https://pullrequests.example.com
 SESSION_SECRET=replace-with-openssl-rand-hex-32
-GHE_OAUTH_APPS={"pinkroccade.ghe.com":{"clientId":"your-client-id","clientSecret":"your-client-secret","apiUrl":"https://api.pinkroccade.ghe.com","webUrl":"https://pinkroccade.ghe.com"}}
+GHE_OAUTH_APPS={"your-tenant.ghe.com":{"clientId":"your-client-id","clientSecret":"your-client-secret","apiUrl":"https://api.your-tenant.ghe.com","webUrl":"https://your-tenant.ghe.com"}}
 ```
 
 **GitHub Enterprise Server:**
@@ -216,7 +216,7 @@ VITE_MAX_REQUESTS_PER_MINUTE=500
 ### Connecting Your GitHub Account
 
 - Choose GitHub.com or GitHub Enterprise in the header.
-- For enterprise login, enter the enterprise host, for example `pinkroccade.ghe.com`.
+- For enterprise login, enter the enterprise host, for example `your-tenant.ghe.com`.
 - Click **Log in with GitHub** and authorize the OAuth app.
 - Your authentication session will automatically expire for security purposes.
 

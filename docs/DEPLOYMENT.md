@@ -21,11 +21,11 @@ This guide explains how to deploy the GitHub PR Dashboard with OAuth login and d
    GITHUB_OAUTH_CLIENT_SECRET=your-client-secret
    ```
 
-   **For GHE.com, such as pinkroccade.ghe.com:**
+   **For GHE.com, such as your-tenant.ghe.com:**
    ```env
    APP_BASE_URL=https://pullrequests.example.com
    SESSION_SECRET=replace-with-openssl-rand-hex-32
-   GHE_OAUTH_APPS={"pinkroccade.ghe.com":{"clientId":"your-client-id","clientSecret":"your-client-secret","apiUrl":"https://api.pinkroccade.ghe.com","webUrl":"https://pinkroccade.ghe.com"}}
+   GHE_OAUTH_APPS={"your-tenant.ghe.com":{"clientId":"your-client-id","clientSecret":"your-client-secret","apiUrl":"https://api.your-tenant.ghe.com","webUrl":"https://your-tenant.ghe.com"}}
    ```
 
    **For GitHub Enterprise Server:**

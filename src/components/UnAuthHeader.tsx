@@ -59,7 +59,7 @@ export const UnAuthHeader: React.FC<UnAuthHeaderProps> = ({
           size="small"
           sx={{ width: { xs: "180px", sm: "240px" } }}
           label="Enterprise host"
-          placeholder="pinkroccade.ghe.com"
+          placeholder="your-tenant.ghe.com"
           variant="standard"
           value={enterpriseHost}
           onChange={(event) => setEnterpriseHost(event.target.value)}

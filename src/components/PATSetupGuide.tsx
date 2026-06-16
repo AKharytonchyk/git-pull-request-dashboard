@@ -14,7 +14,7 @@ const PATSetupGuide = () => {
         </Typography>
         <Typography variant="body1" component="div">
           2. For GitHub Enterprise, select the enterprise option and enter the
-          tenant host, such as <strong>pinkroccade.ghe.com</strong>.
+          tenant host, such as <strong>your-tenant.ghe.com</strong>.
         </Typography>
         <Typography variant="body1" component="div">
           3. Click the GitHub login button and authorize the OAuth app.
