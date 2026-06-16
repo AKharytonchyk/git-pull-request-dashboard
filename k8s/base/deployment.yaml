@@ -2,8 +2,22 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: git-pull-request-dashboard
+  namespace: automation
   labels:
     app: git-pull-request-dashboard
+  annotations:
+    # Tag + digest are pinned by Flux image automation in overlays/prod;
+    # `:latest` here is the placeholder Flux rewrites on every reconcile.
+    checkov.io/skip1: CKV_K8S_14=Image tag is pinned by Flux in overlays/prod
+    checkov.io/skip2: CKV_K8S_43=Image digest is pinned by Flux in overlays/prod
+    # OAuth client creds + session secret must be injected as env vars because
+    # the Node runtime reads them via process.env at boot (server/index.mjs).
+    # Mounting as files would force the runtime to learn a file-based config.
+    checkov.io/skip3: CKV_K8S_35=OAuth runtime reads creds from process.env at boot; secretKeyRef is the recommended pattern
+    # The Node base image's documented production user is `node` (uid 1000),
+    # which satisfies runAsNonRoot; CKV_K8S_40's >=10000 floor would mean
+    # running as an unmapped UID with no homedir for no extra hardening.
+    checkov.io/skip4: CKV_K8S_40=Using the upstream node:22-alpine user (uid 1000); runAsNonRoot is enforced via securityContext
 spec:
   replicas: 1
   selector:
@@ -17,8 +31,12 @@ spec:
       # Keep off the control-plane Pi; run on the amd64 worker (ff-vm1).
       nodeSelector:
         node-role.kubernetes.io/worker: ""
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
         seccompProfile:
           type: RuntimeDefault
       # ghcr.io/magmamoose/* pull creds — the `automation` ns carries the
@@ -83,6 +101,15 @@ spec:
             periodSeconds: 30
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
             capabilities:
               drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        # readOnlyRootFilesystem leaves nothing writable; Node's tmpfile use
+        # (npm cache, undici scratch) lands here instead of the image layer.
+        - name: tmp
+          emptyDir: {}
       restartPolicy: Always
