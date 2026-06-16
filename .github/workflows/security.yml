@@ -1,0 +1,18 @@
+name: Security
+
+# Chargate security gate (https://github.com/MagmaMoose/chargate).
+# On PRs: whole-repo MegaLinter -> gate on net-new findings -> SARIF to the
+# GitHub Security tab. On push to main: non-gating baseline scan.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+  security-events: write
+
+jobs:
+  chargate:
+    uses: magmamoose/chargate/.github/workflows/gate.yml@9e64603f83ca3cf5e03d4566903e4ae3f91613e9 # v2.0.2

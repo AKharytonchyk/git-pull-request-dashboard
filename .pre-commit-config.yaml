@@ -1,0 +1,10 @@
+repos:
+  - repo: https://github.com/MagmaMoose/chargate
+    rev: v2.0.2
+    hooks:
+      # Fast staged-file security + lint gate (gitleaks + ruff where present).
+      - id: chargate
+      # Pin GitHub Actions `uses:` to immutable SHAs.
+      - id: actions-pin-sha
+      # Enforce conventional branch naming.
+      - id: conventional-branch-name
