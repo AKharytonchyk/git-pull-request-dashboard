@@ -2,6 +2,21 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: oauth2-proxy
+  namespace: automation
+  annotations:
+    # Image tag is pinned (v7.6.0); digest pinning isn't part of this stack's
+    # upgrade flow for upstream community images.
+    checkov.io/skip1: CKV_K8S_43=Image tag is pinned; digest pinning not in scope for upstream images
+    # oauth2-proxy reads creds from env vars (OAUTH2_PROXY_CLIENT_ID etc.) by
+    # design; secretKeyRef is the recommended k8s pattern.
+    checkov.io/skip2: CKV_K8S_35=oauth2-proxy reads creds from env vars by design; secretKeyRef is the recommended pattern
+    # upstream quay.io/oauth2-proxy runs as uid 2000 (non-root). The >=10000
+    # floor would mean running as an unmapped UID with no homedir.
+    checkov.io/skip3: CKV_K8S_40=Using the upstream oauth2-proxy non-root user; runAsNonRoot is enforced via securityContext
+    # Cluster-wide NetworkPolicy is owned by the infra repo (Kyverno + the
+    # cloudflared tunnel define the trust boundary); replicating it per app
+    # here would drift from the policy source of truth.
+    checkov.io/skip4: CKV2_K8S_6=Cluster NetworkPolicy is owned and applied by the infra repo
 spec:
   replicas: 1
   selector:
@@ -14,9 +29,15 @@ spec:
     spec:
       nodeSelector:
         node-role.kubernetes.io/worker: ""
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: oauth2-proxy
           image: quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
+          imagePullPolicy: Always
           args:
             - --provider=google
             - --email-domain=magmamoose.com
@@ -55,7 +76,20 @@ spec:
               cpu: 10m
               memory: 64Mi
             limits:
+              cpu: 100m
               memory: 128Mi
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -69,6 +103,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: oauth2-proxy
+  namespace: automation
 spec:
   selector:
     app: oauth2-proxy

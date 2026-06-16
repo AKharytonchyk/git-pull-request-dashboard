@@ -18,6 +18,10 @@ metadata:
     # which satisfies runAsNonRoot; CKV_K8S_40's >=10000 floor would mean
     # running as an unmapped UID with no homedir for no extra hardening.
     checkov.io/skip4: CKV_K8S_40=Using the upstream node:22-alpine user (uid 1000); runAsNonRoot is enforced via securityContext
+    # Cluster-wide NetworkPolicy is owned by the infra repo (Kyverno + the
+    # cloudflared tunnel define the trust boundary); replicating it per app
+    # here would drift from the policy source of truth.
+    checkov.io/skip5: CKV2_K8S_6=Cluster NetworkPolicy is owned and applied by the infra repo
 spec:
   replicas: 1
   selector:
