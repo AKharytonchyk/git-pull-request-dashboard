@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: git-pull-request-dashboard
+  labels:
+    app: git-pull-request-dashboard
+spec:
+  selector:
+    app: git-pull-request-dashboard
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

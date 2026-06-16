@@ -1,0 +1,8 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: automation
+resources:
+  - ../../base
+images:
+  - name: ghcr.io/magmamoose/git-pull-request-dashboard
+    newTag: v1.3.1 # {"$imagepolicy": "flux-system:git-pull-request-dashboard:tag"}
