@@ -1,6 +1,6 @@
 # Dynamic GitHub Environment Deployment Guide
 
-This guide explains how to deploy the GitHub PR Dashboard with dynamic environment configuration supporting both GitHub.com and GitHub Enterprise Server.
+This guide explains how to deploy the GitHub PR Dashboard with OAuth login and dynamic environment configuration for GitHub.com, GitHub Enterprise Server, and GHE.com data-residency tenants.
 
 ## Environment Configuration
 
@@ -11,29 +11,51 @@ This guide explains how to deploy the GitHub PR Dashboard with dynamic environme
    cp .env.example .env.local
    ```
 
-2. **Configure for your GitHub environment:**
+2. **Configure OAuth runtime values:**
 
    **For GitHub.com:**
    ```env
-   VITE_GITHUB_API_URL=https://api.github.com
-   VITE_MAX_REQUESTS_PER_MINUTE=200
+   APP_BASE_URL=https://pullrequests.example.com
+   SESSION_SECRET=replace-with-openssl-rand-hex-32
+   GITHUB_OAUTH_CLIENT_ID=your-client-id
+   GITHUB_OAUTH_CLIENT_SECRET=your-client-secret
    ```
 
-   **For ACME GitHub Enterprise:**
+   **For GHE.com, such as your-tenant.ghe.com:**
    ```env
-   VITE_GITHUB_API_URL=https://ghe.acme.com/api/v3
-   VITE_GITHUB_AVATAR_URL=https://avatars.ghe.acme.com
-   VITE_GITHUB_BASE_URL=https://ghe.acme.com
-   VITE_MAX_REQUESTS_PER_MINUTE=300
+   APP_BASE_URL=https://pullrequests.example.com
+   SESSION_SECRET=replace-with-openssl-rand-hex-32
+   GHE_OAUTH_APPS={"your-tenant.ghe.com":{"clientId":"your-client-id","clientSecret":"your-client-secret","apiUrl":"https://api.your-tenant.ghe.com","webUrl":"https://your-tenant.ghe.com"}}
+   ```
+
+   **For GitHub Enterprise Server:**
+   ```env
+   APP_BASE_URL=https://pullrequests.example.com
+   SESSION_SECRET=replace-with-openssl-rand-hex-32
+   GHE_HOST=ghe.acme.com
+   GHE_OAUTH_CLIENT_ID=your-client-id
+   GHE_OAUTH_CLIENT_SECRET=your-client-secret
+   ```
+
+3. **Register callback URLs in each OAuth App:**
+
+   ```text
+   https://pullrequests.example.com/api/auth/github/callback
    ```
 
 ### Auto-Detection Features
 
 The application automatically detects and configures:
 
-1. **Avatar URLs** - Derived from API URL if not explicitly set
-2. **Base URLs** - Derived from API URL if not explicitly set  
+1. **OAuth provider URLs** - Derived from the selected login host
+2. **GHE.com API URLs** - `SUBDOMAIN.ghe.com` maps to `api.SUBDOMAIN.ghe.com`
 3. **Content Security Policy** - Generated dynamically based on your GitHub environment
+
+## Runtime Deployment
+
+OAuth login requires the Node runtime from `server/index.mjs`. The Docker image in this repository runs that server on port `8080`, serves the built Vite app, handles OAuth callbacks, stores encrypted HttpOnly cookies, and proxies GitHub API calls through `/api/github/*`.
+
+Static hosting can still be used for PAT-only deployments, but it cannot safely complete the OAuth code exchange because the OAuth client secret must remain server-side.
 
 ## Content Security Policy (CSP) Configuration
 
@@ -55,25 +77,18 @@ console.log('Domains:', domains);
 
 ### Production Deployment Examples
 
-#### 1. Express.js Server
+#### 1. Built-in Node Runtime
 
-```javascript
-// server.js
-import express from 'express';
-import { envConfig } from './dist/utils/environmentConfig.js';
-
-const app = express();
-
-// Dynamic CSP middleware
-app.use((req, res, next) => {
-  res.setHeader('Content-Security-Policy', envConfig.generateCSP());
-  next();
-});
-
-app.use(express.static('dist'));
+```bash
+npm run build
+APP_BASE_URL=https://pullrequests.example.com \
+SESSION_SECRET="$(openssl rand -hex 32)" \
+GITHUB_OAUTH_CLIENT_ID=... \
+GITHUB_OAUTH_CLIENT_SECRET=... \
+npm run serve
 ```
 
-#### 2. Nginx Configuration
+#### 2. Nginx Configuration for PAT-only Static Hosting
 
 ```nginx
 # nginx.conf or site configuration
@@ -83,7 +98,7 @@ server {
     root /path/to/dist;
     
     # Dynamic CSP header (replace with actual generated value)
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://ghe.acme.com/api/v3 https://ghe.acme.com https://api.simplesvg.com; img-src 'self' data: https://avatars.ghe.acme.com https://api.simplesvg.com; frame-ancestors 'none'; base-uri 'self'";
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://ghe.acme.com/api/v3 https://ghe.acme.com https://api.github.com https://*.ghe.com https://api.simplesvg.com; img-src 'self' data: https://avatars.ghe.acme.com https://avatars.githubusercontent.com https://*.ghe.com https://*.githubusercontent.com https://api.simplesvg.com; frame-ancestors 'none'; base-uri 'self'";
     
     location / {
         try_files $uri $uri/ /index.html;
@@ -96,7 +111,7 @@ server {
 ```
 # _headers file for static deployments
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://api.simplesvg.com; img-src 'self' data: https://avatars.githubusercontent.com https://api.simplesvg.com; frame-ancestors 'none'; base-uri 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://*.ghe.com https://api.simplesvg.com; img-src 'self' data: https://avatars.githubusercontent.com https://*.ghe.com https://*.githubusercontent.com https://api.simplesvg.com; frame-ancestors 'none'; base-uri 'self'
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
 ```
@@ -138,7 +153,7 @@ VITE_GITHUB_API_URL=https://api.github.com
 
 **Generated CSP:**
 ```
-Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://api.simplesvg.com; img-src 'self' data: https://avatars.githubusercontent.com https://api.simplesvg.com; frame-ancestors 'none'; base-uri 'self'
+Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://*.ghe.com https://api.simplesvg.com; img-src 'self' data: https://avatars.githubusercontent.com https://*.ghe.com https://*.githubusercontent.com https://api.simplesvg.com; frame-ancestors 'none'; base-uri 'self'
 ```
 
 **Domains to Whitelist:**
@@ -157,7 +172,7 @@ VITE_GITHUB_BASE_URL=https://ghe.acme.com
 
 **Generated CSP:**
 ```
-Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://ghe.acme.com/api/v3 https://ghe.acme.com https://api.simplesvg.com; img-src 'self' data: https://avatars.ghe.acme.com https://api.simplesvg.com; frame-ancestors 'none'; base-uri 'self'
+Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://ghe.acme.com/api/v3 https://ghe.acme.com https://api.github.com https://*.ghe.com https://api.simplesvg.com; img-src 'self' data: https://avatars.ghe.acme.com https://avatars.githubusercontent.com https://*.ghe.com https://*.githubusercontent.com https://api.simplesvg.com; frame-ancestors 'none'; base-uri 'self'
 ```
 
 **Domains to Whitelist:**
@@ -180,7 +195,7 @@ VITE_GITHUB_API_URL=https://github.company.com/api/v3
 1. **HTTPS Only**: Always use HTTPS in production
 2. **Domain Validation**: All URLs are validated during startup
 3. **CSP Enforcement**: CSP headers prevent XSS attacks
-4. **Token Security**: Tokens stored in sessionStorage with expiration
+4. **Token Security**: OAuth sessions use encrypted HttpOnly cookies; PAT fallback uses sessionStorage with expiration
 
 ## Testing Your Configuration
 

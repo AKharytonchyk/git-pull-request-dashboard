@@ -1,7 +1,7 @@
-# Multi-stage build of the git-pull-request-dashboard SPA — a client-side
-# Vite/React app (the GitHub PAT is entered in the browser at runtime; there is
-# no server-side config or secret). Built from this repo's own source and served
-# by a rootless nginx on :8080.
+# Multi-stage build of the git-pull-request-dashboard SPA and its small OAuth
+# runtime. The Node runtime serves the Vite bundle, handles GitHub OAuth
+# callbacks, stores per-user sessions in HttpOnly cookies, and proxies GitHub API
+# requests on :8080.
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
@@ -9,11 +9,12 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM ghcr.io/nginxinc/nginx-unprivileged:1.27-alpine
-# SPA routing (try_files -> index.html); listens on 8080 as the non-root user.
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+FROM node:22-alpine
+WORKDIR /app
 COPY --from=build /app/dist /usr/share/nginx/html
-# The base image already runs as the unprivileged `nginx` user (uid 101);
-# restate it so image scanners can see the container never runs as root.
-USER 101
+COPY server ./server
+ENV DIST_DIR=/usr/share/nginx/html
+ENV NODE_ENV=production
+USER node
 EXPOSE 8080
+CMD ["node", "server/index.mjs"]

@@ -18,17 +18,24 @@ import { TokenManager } from "./utils/tokenManager";
 import { usePersistentState, validators } from "./hooks/usePersistentState";
 import { ToastNotification } from "./components/ToastNotification";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { envConfig } from "./utils/environmentConfig";
+import {
+  oauthProxyApiUrl,
+  providerFromConfiguredEnvironment,
+  providerFromHost,
+} from "./utils/githubProvider";
+import {
+  AuthSession,
+  AuthenticatedUser,
+  OAuthSessionResponse,
+} from "./models/Auth";
+
+const patLoginEnabled = import.meta.env.VITE_ENABLE_PAT_LOGIN !== "false";
 
 function App() {
-  const [user, setUser] = React.useState<{
-    login: string;
-    avatar_url: string;
-    url: string;
-  }>();
-  const [token, setToken] = React.useState<string>();
+  const [authSession, setAuthSession] = React.useState<AuthSession>();
   const [octokit, setOctokit] = React.useState<GitService | null>(null);
   const [openSettings, setOpenSettings] = React.useState<boolean>(false);
+  const [authLoading, setAuthLoading] = React.useState<boolean>(true);
   
   // Use persistent state hook for better state management
   const [isDarkMode, setIsDarkMode] = usePersistentState('DARK_MODE', {
@@ -55,60 +62,127 @@ function App() {
   });
 
   const navigate = useNavigate();
+  const user = authSession?.user;
 
   const showToast = React.useCallback((message: string, severity: 'error' | 'warning' | 'info' | 'success' = 'info') => {
     setToast({ open: true, message, severity });
   }, []);
 
-  const onLogin = React.useCallback(() => {
-    if (token) {
-      const octoKit = new GitService(
-        envConfig.githubApiUrl,
-        token
-      );
+  const setAuthenticatedSession = React.useCallback((
+    session: AuthSession,
+    apiUrl = session.provider.apiUrl
+  ) => {
+    setAuthSession(session);
+    setOctokit(new GitService(apiUrl, session.token, session.provider.webUrl));
+  }, []);
+
+  const onPatLogin = React.useCallback((token: string, providerHost?: string) => {
+    if (!token) {
+      showToast("Enter a GitHub token first.", "warning");
+      return;
+    }
+
+    const provider = providerHost?.trim()
+      ? providerFromHost(providerHost)
+      : providerFromConfiguredEnvironment();
+
+    const octoKit = new GitService(
+      provider.apiUrl,
+      token,
+      provider.webUrl
+    );
       octoKit.testAuthentication().then((user) => {
         if (user.status !== 200) {
-          showToast("Invalid token. Please check your GitHub Personal Access Token.", "error");
-          setUser(undefined);
+          showToast("Invalid token. Please check your GitHub token.", "error");
+          setAuthSession(undefined);
           return;
         }
 
-        setOctokit(octoKit);
-        setUser(user.data);
-        TokenManager.setToken(token);
-        TokenManager.setUserData(user.data);
+        const session: AuthSession = {
+          method: "pat",
+          token,
+          provider,
+          user: user.data as AuthenticatedUser,
+        };
+
+        setAuthenticatedSession(session);
+        TokenManager.setSession(session);
         navigate("/");
         showToast("Successfully logged in!", "success");
       }).catch((error) => {
         console.error("Authentication failed:", error);
         showToast("Authentication failed. Please try again.", "error");
       });
-    }
-  }, [token, navigate, showToast]);
+  }, [navigate, setAuthenticatedSession, showToast]);
 
-  React.useEffect(() => {
-    const storedToken = TokenManager.getToken();
-    const storedUser = TokenManager.getUserData();
-    
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(storedUser);
-      setOctokit(
-        new GitService(
-          envConfig.githubApiUrl,
-          storedToken
-        )
-      );
-    }
+  const onOAuthLogin = React.useCallback((providerHost?: string) => {
+    const provider = providerFromHost(providerHost || "github.com");
+    const loginUrl = new URL("/api/auth/github/start", window.location.origin);
+    loginUrl.searchParams.set("provider", provider.host);
+    window.location.assign(loginUrl.toString());
   }, []);
 
+  React.useEffect(() => {
+    let cancelled = false;
+
+    async function hydrateAuth() {
+      try {
+        const response = await fetch("/api/auth/session", {
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          const data = await response.json() as OAuthSessionResponse;
+          if (data.authenticated && data.user && data.provider) {
+            if (!cancelled) {
+              setAuthenticatedSession({
+                method: "oauth",
+                provider: data.provider,
+                user: data.user,
+              }, oauthProxyApiUrl());
+              TokenManager.clearToken();
+              setAuthLoading(false);
+            }
+            return;
+          }
+        }
+      } catch {
+        // Static/dev deployments may not have the OAuth server enabled.
+      }
+
+      const storedSession = TokenManager.getSession();
+      if (!cancelled && storedSession) {
+        setAuthenticatedSession(storedSession);
+      }
+
+      if (!cancelled) {
+        setAuthLoading(false);
+      }
+    }
+
+    hydrateAuth();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [setAuthenticatedSession]);
+
   const logOut = React.useCallback(() => {
+    if (authSession?.method === "oauth") {
+      fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      }).catch((error) => {
+        console.warn("OAuth logout request failed:", error);
+      });
+    }
+
     TokenManager.clearToken();
-    setUser(undefined);
+    setAuthSession(undefined);
     setOctokit(null);
     navigate("/login");
     showToast("Logged out successfully", "info");
-  }, [navigate, showToast]);
+  }, [authSession?.method, navigate, showToast]);
 
   const switchDarkMode = React.useCallback(() => {
     setIsDarkMode((prev) => !prev);
@@ -140,6 +214,7 @@ function App() {
             handleRepositorySelect,
             saveRawSettings,
             user,
+            provider: authSession?.provider,
           }}
         >
           <AppBar
@@ -149,10 +224,15 @@ function App() {
           >
             <Toolbar sx={{ justifyContent: "flex-end" }}>
               {!user?.login ? (
-                <UnAuthHeader setToken={setToken} onLogin={onLogin} />
+                <UnAuthHeader
+                  loading={authLoading}
+                  onOAuthLogin={onOAuthLogin}
+                  onPatLogin={patLoginEnabled ? onPatLogin : undefined}
+                />
               ) : (
                 <AuthHeader
                   user={user}
+                  provider={authSession?.provider}
                   logOut={logOut}
                   setOpenSettings={setOpenSettings}
                   onThemeSwitch={switchDarkMode}

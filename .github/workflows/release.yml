@@ -10,6 +10,9 @@ on:
     branches: [main]
     paths-ignore: ['**.md', '.gitignore', 'LICENSE', 'CHANGELOG.md']
 
+permissions:
+  contents: read
+
 jobs:
   release:
     runs-on: ubuntu-latest

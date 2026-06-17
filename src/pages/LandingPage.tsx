@@ -70,7 +70,7 @@ export default function LandingPage({ auth = false }) {
             centered
           >
             <Tab label="General Info" {...a11yProps(0)} />
-            <Tab label="Guide: How to Set Up PAT" {...a11yProps(1)} />
+            <Tab label="Guide: Authentication" {...a11yProps(1)} />
             <Tab label="Guide: How to Select Repos" {...a11yProps(2)} />
           </Tabs>
         </AppBar>
@@ -108,7 +108,7 @@ export default function LandingPage({ auth = false }) {
 
         <TabPanel value={value} index={1}>
           <Typography variant="h6" gutterBottom color={"inherit"}>
-            How to Set Up PAT
+            Authentication
           </Typography>
           <PATSetupGuide />
         </TabPanel>

@@ -44,9 +44,11 @@
   },
   "scripts": {
     "dev": "vite",
+    "dev:oauth": "npm run build && NODE_ENV=development node server/index.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "serve": "NODE_ENV=production node server/index.mjs",
     "lint:fix": "eslint --fix .",
     "type-check": "tsc --noEmit",
     "test": "jest",

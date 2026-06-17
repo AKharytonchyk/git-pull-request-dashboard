@@ -1,29 +1,69 @@
+import { AuthSession, AuthenticatedUser } from "../models/Auth";
+
 // Enhanced token security utilities
 export class TokenManager {
   private static readonly TOKEN_KEY = 'github_token';
   private static readonly EXPIRY_KEY = 'token_expiry';
   private static readonly USER_KEY = 'github_user';
+  private static readonly SESSION_KEY = 'github_auth_session';
   private static readonly SESSION_DURATION = 8 * 60 * 60 * 1000; 
   private static readonly WARNING_THRESHOLD = 30 * 60 * 1000;
 
-  static setToken(token: string): void {
+  private static encodeToken(token: string): string {
+    return btoa(token);
+  }
+
+  private static decodeToken(encodedToken: string): string {
+    return atob(encodedToken);
+  }
+
+  static setSession(session: AuthSession): void {
     try {
+      if (session.method !== "pat") {
+        return;
+      }
+
+      const { token } = session;
       if (!token || token.length < 10) {
         throw new Error('Invalid token format');
       }
 
-      const encodedToken = btoa(token);
       const expiryTime = Date.now() + this.SESSION_DURATION;
+      const storedSession = {
+        ...session,
+        token: this.encodeToken(token),
+        expiresAt: expiryTime,
+      };
       
-      sessionStorage.setItem(this.TOKEN_KEY, encodedToken);
+      sessionStorage.setItem(this.SESSION_KEY, JSON.stringify(storedSession));
+      sessionStorage.setItem(this.TOKEN_KEY, storedSession.token);
       sessionStorage.setItem(this.EXPIRY_KEY, expiryTime.toString());
+      sessionStorage.setItem(this.USER_KEY, JSON.stringify(session.user));
     } catch (error) {
       console.error('Failed to store token:', error);
       throw new Error('Failed to store authentication token');
     }
   }
 
-  static setUserData(userData: any): void {
+  static setToken(token: string): void {
+    this.setSession({
+      method: "pat",
+      token,
+      provider: {
+        host: "github.com",
+        apiUrl: "https://api.github.com",
+        webUrl: "https://github.com",
+        avatarUrl: "https://avatars.githubusercontent.com",
+      },
+      user: this.getUserData() ?? {
+        login: "",
+        avatar_url: "",
+        url: "",
+      },
+    });
+  }
+
+  static setUserData(userData: AuthenticatedUser): void {
     try {
       sessionStorage.setItem(this.USER_KEY, JSON.stringify(userData));
     } catch (error) {
@@ -31,7 +71,7 @@ export class TokenManager {
     }
   }
 
-  static getUserData(): any | null {
+  static getUserData(): AuthenticatedUser | null {
     try {
       const userData = sessionStorage.getItem(this.USER_KEY);
       return userData ? JSON.parse(userData) : null;
@@ -41,8 +81,47 @@ export class TokenManager {
     }
   }
 
+  static getSession(): AuthSession | null {
+    try {
+      const storedSession = sessionStorage.getItem(this.SESSION_KEY);
+      if (!storedSession) {
+        return null;
+      }
+
+      const parsed = JSON.parse(storedSession) as AuthSession & {
+        expiresAt?: number;
+        token?: string;
+      };
+
+      if (!parsed.expiresAt || Date.now() > parsed.expiresAt) {
+        this.clearToken();
+        return null;
+      }
+
+      if (parsed.method !== "pat" || !parsed.token) {
+        return null;
+      }
+
+      return {
+        method: "pat",
+        token: this.decodeToken(parsed.token),
+        provider: parsed.provider,
+        user: parsed.user,
+      };
+    } catch (error) {
+      console.error('Failed to retrieve auth session:', error);
+      this.clearToken();
+      return null;
+    }
+  }
+
   static getToken(): string | null {
     try {
+      const session = this.getSession();
+      if (session?.token) {
+        return session.token;
+      }
+
       const encodedToken = sessionStorage.getItem(this.TOKEN_KEY);
       const expiry = sessionStorage.getItem(this.EXPIRY_KEY);
       
@@ -53,7 +132,7 @@ export class TokenManager {
         return null;
       }
       
-      return atob(encodedToken);
+      return this.decodeToken(encodedToken);
     } catch (error) {
       console.error('Failed to retrieve token:', error);
       this.clearToken();
@@ -66,6 +145,7 @@ export class TokenManager {
       sessionStorage.removeItem(this.TOKEN_KEY);
       sessionStorage.removeItem(this.EXPIRY_KEY);
       sessionStorage.removeItem(this.USER_KEY);
+      sessionStorage.removeItem(this.SESSION_KEY);
     } catch (error) {
       console.error('Failed to clear token:', error);
     }

@@ -1,47 +1,35 @@
-// PATSetupGuide.js
 import { Typography, Box } from "@mui/material";
 
 const PATSetupGuide = () => {
   return (
     <>
       <Typography component="p">
-        A Personal Access Token (PAT) on GitHub allows third-party applications
-        to interact with your GitHub account securely. Follow these steps to
-        create a PAT:
+        The dashboard supports GitHub OAuth. Choose GitHub.com or GitHub
+        Enterprise in the header, then use the GitHub login button to authorize
+        the configured OAuth app once.
       </Typography>
       <Box sx={{ my: 2 }}>
         <Typography variant="body1" component="div">
-          1. Log in to your GitHub account.
+          1. For GitHub.com, keep the GitHub selector active.
         </Typography>
         <Typography variant="body1" component="div">
-          2. Click on your profile icon in the upper-right corner of any GitHub
-          page, then click <strong>Settings</strong>.
+          2. For GitHub Enterprise, select the enterprise option and enter the
+          tenant host, such as <strong>your-tenant.ghe.com</strong>.
         </Typography>
         <Typography variant="body1" component="div">
-          3. In the left sidebar, click <strong>Developer settings</strong>.
+          3. Click the GitHub login button and authorize the OAuth app.
         </Typography>
         <Typography variant="body1" component="div">
-          4. In the left sidebar, click <strong>Personal access tokens</strong>,
-          then click <strong>Generate new token</strong>.
-        </Typography>
-        <Typography variant="body1" component="div">
-          5. Give your token a descriptive name.
-        </Typography>
-        <Typography variant="body1" component="div">
-          6. Select the scopes or permissions you'd like to grant this token. To
-          monitor pull requests across your repositories, select{" "}
-          <strong>repo</strong> and <strong>read:org</strong>.
-        </Typography>
-        <Typography variant="body1" component="div">
-          7. Click <strong>Generate token</strong>.
+          4. The dashboard will use your account permissions to list the
+          repositories you can access.
         </Typography>
         <Typography component="p">
-          After clicking <strong>Generate token</strong>, make sure to copy your
-          new personal access token. You won’t be able to see it again!
+          OAuth sessions are stored in a secure server-side cookie, and GitHub
+          API requests are proxied for the signed-in user.
         </Typography>
         <Typography variant="body2" color="textSecondary">
-          Note: Treat your tokens like passwords and keep them secret. Do not
-          share your tokens.
+          Personal access token login remains available from the key icon when
+          enabled for local development or unusual enterprise setups.
         </Typography>
       </Box>
     </>
