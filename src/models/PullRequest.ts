@@ -1,4 +1,6 @@
 export interface PullRequest {
+  providerHost?: string;
+  repositoryKey?: string;
   url: string;
   id: number;
   node_id: string;

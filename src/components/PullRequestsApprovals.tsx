@@ -9,19 +9,22 @@ export type PullRequestsApprovalsProps = {
   owner: string;
   repo: string;
   prNumber: number;
+  providerHost?: string;
 };
 
 export const PullRequestsApprovals: React.FC<PullRequestsApprovalsProps> = ({
   owner,
   repo,
   prNumber,
+  providerHost,
 }) => {
-  const { octokit } = React.useContext(ConfigContext);
+  const { getClientForProvider } = React.useContext(ConfigContext);
+  const octokit = getClientForProvider(providerHost);
   const elementRef = React.useRef<HTMLDivElement>(null);
   const isIntersecting = useOnScreen(elementRef, "100px", true);
 
   const { isLoading, data: approvals = [] } = useQuery({
-    queryKey: ["approvals", owner, repo, prNumber],
+    queryKey: ["approvals", providerHost, owner, repo, prNumber],
     queryFn: async () => {
       if (!octokit || !isIntersecting) return;
       const response = await octokit.getPRApprovals(owner, repo, prNumber);

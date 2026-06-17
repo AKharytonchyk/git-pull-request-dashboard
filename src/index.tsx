@@ -55,6 +55,7 @@ root.render(
             <Route path="/my-pull-requests" element={<MyPullRequests />} />
             <Route path="/repositories">
               <Route index element={<RepositoriesPage />} />
+              <Route path=":providerHost/:owner/:repo" element={<RepositoryItem />} />
               <Route path=":owner/:repo" element={<RepositoryItem />} />
             </Route>
             <Route path="/issues" element={<IssuesPage />} />

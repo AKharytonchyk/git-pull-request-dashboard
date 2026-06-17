@@ -10,8 +10,10 @@ import {
 import React from "react";
 import { Repository } from "../models/Repository";
 import { ConfigContext } from "../context/ConfigContext";
+import { repositoryKey } from "../utils/repositoryKeys";
 
 export type RepositorySelectorProps = {
+  providerHost: string;
   repository: Repository;
 };
 
@@ -24,28 +26,33 @@ const Action: React.FC<{ onUndo: () => void }> = ({ onUndo }) => (
 );
 
 export const RepositorySelector: React.FC<RepositorySelectorProps> = ({
+  providerHost,
   repository,
 }) => {
   const { repositorySettings, handleRepositorySelect } =
     React.useContext(ConfigContext);
 
   const [open, setOpen] = React.useState(false);
+  const key = React.useMemo(
+    () => repositoryKey(providerHost, repository.full_name),
+    [providerHost, repository.full_name]
+  );
 
   const handleSelect = React.useCallback(() => {
     handleRepositorySelect(
-      repository.full_name,
-      !repositorySettings[repository.full_name]
+      key,
+      !repositorySettings[key]
     );
     setOpen(true);
-  }, [handleRepositorySelect, repository, repositorySettings]);
+  }, [handleRepositorySelect, key, repositorySettings]);
 
   const handleUndo = React.useCallback(() => {
     handleRepositorySelect(
-      repository.full_name,
-      !repositorySettings[repository.full_name]
+      key,
+      !repositorySettings[key]
     );
     setOpen(false);
-  }, [handleRepositorySelect, repository, repositorySettings]);
+  }, [handleRepositorySelect, key, repositorySettings]);
 
   const handleClose = React.useCallback((e: any) => {
     e?.stopPropagation();
@@ -54,7 +61,7 @@ export const RepositorySelector: React.FC<RepositorySelectorProps> = ({
   }, []);
 
   const message = React.useMemo(() => {
-    return repositorySettings[repository.full_name] ? (
+    return repositorySettings[key] ? (
       <Typography>
         Repository <strong>{repository.name.toUpperCase()}</strong> was moved to
         the top of the list
@@ -65,13 +72,13 @@ export const RepositorySelector: React.FC<RepositorySelectorProps> = ({
         the bottom of the list
       </Typography>
     );
-  }, [repository, repositorySettings]);
+  }, [key, repository, repositorySettings]);
 
   return (
     <ListItemButton key={repository.id} onClick={handleSelect}>
       <ListItemText primary={repository.full_name} />
       <ListItemIcon>
-        {repositorySettings[repository.full_name] ? (
+        {repositorySettings[key] ? (
           <CheckBoxOutlined color="primary" />
         ) : (
           <CheckBoxOutlineBlank />

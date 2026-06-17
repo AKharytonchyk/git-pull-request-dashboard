@@ -17,20 +17,23 @@ export type PullRequestChecksProps = {
   owner: string;
   repo: string;
   prNumber: number;
+  providerHost?: string;
 };
 
 export const PullRequestChecks: React.FC<PullRequestChecksProps> = ({
   owner,
   repo,
   prNumber,
+  providerHost,
 }) => {
-  const { octokit } = React.useContext(ConfigContext);
+  const { getClientForProvider } = React.useContext(ConfigContext);
+  const octokit = getClientForProvider(providerHost);
   const [open, setOpen] = React.useState(false);
   const elementRef = React.useRef<HTMLDivElement>(null);
   const isIntersecting = useOnScreen(elementRef, "100px", true);
 
   const { isLoading, data: checks = [] } = useQuery({
-    queryKey: ["checks", owner, repo, prNumber],
+    queryKey: ["checks", providerHost, owner, repo, prNumber],
     queryFn: async () => {
       if (!octokit || !isIntersecting) return;
       const response = await octokit.getPRChecksStatus(owner, repo, prNumber);

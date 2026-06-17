@@ -9,34 +9,47 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import VulnerabilityIndicator from "../components/VulnerabilityIndicator";
 
 export const RepositoryItem: React.FC = () => {
-  const { octokit } = React.useContext(ConfigContext);
-  const { owner, repo } = useParams();
+  const { clients, getClientForProvider } = React.useContext(ConfigContext);
+  const { providerHost, owner, repo } = useParams();
   const [value, setValue] = React.useState("issues");
 
   const fullName = useMemo(() => `${owner}/${repo}`, [owner, repo]);
+  const resolvedProviderHost = React.useMemo(
+    () => providerHost ? decodeURIComponent(providerHost) : clients[0]?.account.provider.host,
+    [clients, providerHost]
+  );
+  const octokit = getClientForProvider(resolvedProviderHost);
 
   const { data: issues, isLoading: loadingIssues } = useQuery({
-    queryKey: ["issues", fullName],
+    queryKey: ["issues", resolvedProviderHost, fullName],
     queryFn: async () => {
       if (octokit) {
-        return octokit.getIssues(fullName);
+        const issues = await octokit.getIssues(fullName);
+        return issues.map((issue) => ({
+          ...issue,
+          providerHost: resolvedProviderHost,
+        }));
       }
 
       return [];
     },
-    enabled: octokit !== undefined && fullName !== undefined,
+    enabled: !!octokit && fullName !== undefined,
   });
 
   const { data: pulls, isLoading: loadingPulls } = useQuery({
-    queryKey: ["pulls", fullName],
+    queryKey: ["pulls", resolvedProviderHost, fullName],
     queryFn: async () => {
       if (octokit) {
-        return octokit.getPullRequests(fullName);
+        const pulls = await octokit.getPullRequests(fullName);
+        return pulls.map((pull) => ({
+          ...pull,
+          providerHost: resolvedProviderHost,
+        }));
       }
 
       return [];
     },
-    enabled: octokit !== undefined && fullName !== undefined,
+    enabled: !!octokit && fullName !== undefined,
   });
 
   const handleTabChange = (_: any, newValue: string) => {
@@ -52,8 +65,12 @@ export const RepositoryItem: React.FC = () => {
           </Link>
         </Tooltip>
         <Typography variant="h4">{fullName}</Typography>
+        {resolvedProviderHost && (
+          <Typography color="text.secondary">{resolvedProviderHost}</Typography>
+        )}
         <VulnerabilityIndicator 
           repositoryFullName={fullName} 
+          providerHost={resolvedProviderHost}
           compact={false}
         />
       </Stack>
@@ -71,15 +88,21 @@ export const RepositoryItem: React.FC = () => {
         {issues &&
           value === "issues" &&
           issues.map((issue) => (
-            <Grid2 size={{ xs: 12, lg: 6 }} key={issue.number}>
+            <Grid2
+              size={{ xs: 12, lg: 6 }}
+              key={`${issue.providerHost ?? "github.com"}:${issue.number}`}
+            >
               <IssueCard issue={issue} />
             </Grid2>
           ))}
         {pulls &&
           value === "pulls" &&
           pulls.map((pull) => (
-            <Grid2 size={{ xs: 12, xl: 6 }} key={pull.number}>
-              <PullRequestCard key={pull.number} pr={pull} />
+            <Grid2
+              size={{ xs: 12, xl: 6 }}
+              key={`${pull.providerHost ?? "github.com"}:${pull.number}`}
+            >
+              <PullRequestCard pr={pull} />
             </Grid2>
           ))}
       </Grid2>

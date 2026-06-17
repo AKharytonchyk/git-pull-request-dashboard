@@ -15,6 +15,6 @@ COPY --from=build /app/dist /usr/share/nginx/html
 COPY server ./server
 ENV DIST_DIR=/usr/share/nginx/html
 ENV NODE_ENV=production
-USER node
+USER 1000:1000
 EXPOSE 8080
 CMD ["node", "server/index.mjs"]

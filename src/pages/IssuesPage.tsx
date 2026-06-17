@@ -1,36 +1,30 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { ConfigContext } from "../context/ConfigContext";
 import { useQueries } from "@tanstack/react-query";
 import { Box, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import IssueCard from "../components/IssueCard";
+import { useActiveRepositories } from "../hooks/useActiveRepositories";
 
 const IssuesPage: React.FC = () => {
-  const { octokit, repositorySettings, user } = React.useContext(ConfigContext);
-  const [activeRepositories, setActiveRepositories] = React.useState<string[]>(
-    []
-  );
-
-  useEffect(() => {
-    setActiveRepositories(
-      Object.keys(repositorySettings)
-        .filter((key) => repositorySettings[key])
-        .sort()
-    );
-  }, [repositorySettings]);
+  const { clients, repositorySettings, accounts } = React.useContext(ConfigContext);
+  const activeRepositories = useActiveRepositories(repositorySettings, clients);
 
   const { data, pending } = useQueries({
-    queries: activeRepositories.map((repo) => ({
-      queryKey: ["issues", repo],
+    queries: activeRepositories.map((repository) => ({
+      queryKey: ["issues", repository.providerHost, repository.fullName],
       queryFn: async () => {
-        if (octokit) {
-          return octokit.getIssues(repo);
-        }
+        const issues = await repository.client.getIssues(repository.fullName);
+        return issues.map((issue) => ({
+          ...issue,
+          providerHost: repository.providerHost,
+          repositoryKey: repository.key,
+        }));
       },
       enabled:
-        octokit !== undefined &&
+        clients.length > 0 &&
         activeRepositories.length > 0 &&
-        user !== undefined,
+        accounts.length > 0,
     })),
     combine: (results) => {
       return {
@@ -47,7 +41,7 @@ const IssuesPage: React.FC = () => {
     },
   });
 
-  if (!user) {
+  if (accounts.length === 0) {
     return (
       <Box padding={2} width={"calc(100vw - 2em)"}>
         <Typography component="p">
@@ -79,7 +73,10 @@ const IssuesPage: React.FC = () => {
     <Box padding={2} width={"calc(100vw - 2em)"}>
       <Grid container spacing={2}>
         {data.map((issue) => (
-          <Grid key={issue.id} size={{ xl: 6, xs: 12 }}>
+          <Grid
+            key={`${issue.providerHost ?? "github.com"}:${issue.id}`}
+            size={{ xl: 6, xs: 12 }}
+          >
             <IssueCard
               title={issue.title}
               htmlUrl={issue.html_url}

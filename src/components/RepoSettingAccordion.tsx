@@ -21,67 +21,86 @@ import { OrgTitle } from "./OrgAccordionTitle";
 import { UserTitle } from "./UserAccordionTitle";
 import { StarredTitle } from "./StarredAccordingTitle";
 import { useQuery } from "@tanstack/react-query";
+import { GitService } from "../service/gitService";
+import { AuthSession } from "../models/Auth";
+import { repositoryKey } from "../utils/repositoryKeys";
 
 export type RepoSettingAccordionProps = {
+  account: AuthSession;
+  client: GitService;
   org?: Organization;
   type: "user" | "org" | "starred";
 };
 
 export const RepoSettingAccordion: React.FC<RepoSettingAccordionProps> = ({
+  account,
+  client,
   org,
   type,
 }) => {
-  const { octokit, handleRepositorySelect, repositorySettings } =
+  const { handleRepositorySelect, repositorySettings } =
     React.useContext(ConfigContext);
   const [selectedRepos, setSelectedRepos] = React.useState<Repository[]>([]);
   const [expanded, setExpanded] = React.useState<boolean>(false);
+  const providerHost = account.provider.host;
 
   const { isLoading, data: repos = [] } = useQuery({
-    queryKey: ["repos", org?.login, type],
+    queryKey: ["repos", providerHost, org?.login, type],
     queryFn: async () => {
-      if (!octokit) return;
       let fetchedRepos: Repository[] = [];
       switch (type) {
         case "org":
-          fetchedRepos = (org && (await octokit.getRepos(org.login))) ?? [];
+          fetchedRepos = (org && (await client.getRepos(org.login))) ?? [];
           break;
         case "user":
-          fetchedRepos = await octokit.getUserRepos();
+          fetchedRepos = await client.getUserRepos();
           break;
         case "starred":
-          fetchedRepos = await octokit.getStaredRepos();
+          fetchedRepos = await client.getStaredRepos();
           break;
       }
       setSelectedRepos(fetchedRepos);
       return fetchedRepos;
     },
-    enabled: !!octokit && expanded,
+    enabled: expanded,
   });
 
   const repoList = useMemo(
     () =>
       selectedRepos
         .sort((a, b) => {
+          const repoAKey = repositoryKey(providerHost, a.full_name);
+          const repoBKey = repositoryKey(providerHost, b.full_name);
           const repoAHasSettingsTrue =
-            repositorySettings[a.full_name] === true ? 0 : 1;
+            repositorySettings[repoAKey] === true ? 0 : 1;
           const repoBHasSettingsTrue =
-            repositorySettings[b.full_name] === true ? 0 : 1;
+            repositorySettings[repoBKey] === true ? 0 : 1;
           if (repoAHasSettingsTrue !== repoBHasSettingsTrue) {
             return repoAHasSettingsTrue - repoBHasSettingsTrue;
           }
           return a.full_name.localeCompare(b.full_name);
         })
-        .map((repo) => <RepositorySelector key={repo.id} repository={repo} />),
-    [selectedRepos, repositorySettings]
+        .map((repo) => (
+          <RepositorySelector
+            key={`${providerHost}:${repo.id}`}
+            providerHost={providerHost}
+            repository={repo}
+          />
+        )),
+    [providerHost, selectedRepos, repositorySettings]
   );
 
   const handleSelectAll = React.useCallback(() => {
-    repos.forEach((repo) => handleRepositorySelect(repo.full_name, true));
-  }, [repos, handleRepositorySelect]);
+    repos.forEach((repo) =>
+      handleRepositorySelect(repositoryKey(providerHost, repo.full_name), true)
+    );
+  }, [providerHost, repos, handleRepositorySelect]);
 
   const handleSelectNone = React.useCallback(() => {
-    repos.forEach((repo) => handleRepositorySelect(repo.full_name, false));
-  }, [repos, handleRepositorySelect]);
+    repos.forEach((repo) =>
+      handleRepositorySelect(repositoryKey(providerHost, repo.full_name), false)
+    );
+  }, [providerHost, repos, handleRepositorySelect]);
 
   const onFilterChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,11 +117,11 @@ export const RepoSettingAccordion: React.FC<RepoSettingAccordionProps> = ({
       case "org":
         return <OrgTitle org={org} />;
       case "user":
-        return <UserTitle />;
+        return <UserTitle account={account} />;
       case "starred":
         return <StarredTitle />;
     }
-  }, [org, type]);
+  }, [account, org, type]);
 
   const onChange = React.useCallback(
     (_: any, opened: boolean) => {

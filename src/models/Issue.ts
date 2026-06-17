@@ -1,6 +1,8 @@
 import { User as Assignee, PullRequest, Label } from "./PullRequest";
 
 export type Issue = {
+  providerHost?: string;
+  repositoryKey?: string;
   id: number;
   node_id: string;
   url: string;

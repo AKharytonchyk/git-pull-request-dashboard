@@ -25,4 +25,8 @@ export interface OAuthSessionResponse {
   authenticated: boolean;
   provider?: AuthProvider;
   user?: AuthenticatedUser;
+  sessions?: Array<{
+    provider: AuthProvider;
+    user: AuthenticatedUser;
+  }>;
 }

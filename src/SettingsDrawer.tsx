@@ -5,35 +5,76 @@ import { ConfigContext } from "./context/ConfigContext";
 import { RepoSettingAccordion } from "./components/RepoSettingAccordion";
 import { useQuery } from "@tanstack/react-query";
 import { ExportSettings } from "./components/ExportSettings";
+import type { GitAccountClient } from "./context/ConfigContext";
 
 export type SettingsDrawerProps = {
   opened: boolean;
   onClose: () => void;
 };
 
-export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
-  opened,
-  onClose,
+const AccountRepositorySettings: React.FC<{ entry: GitAccountClient }> = ({
+  entry,
 }) => {
-  const { octokit } = React.useContext(ConfigContext);
   const { data: orgs = [] } = useQuery({
-    queryKey: ["orgs"],
+    queryKey: ["orgs", entry.account.provider.host],
     queryFn: async () => {
-      if (!octokit) return;
-      const orgs = await octokit.getOrganizations();
+      const orgs = await entry.client.getOrganizations();
       return orgs.data as Organization[];
     },
-    enabled: !!octokit,
+    enabled: true,
   });
-
-  const [showRawSettings, setShowRawSettings] = React.useState(false);
 
   const orgList = React.useMemo(
     () =>
       orgs.map((org) => (
-        <RepoSettingAccordion key={org.id} org={org} type="org" />
+        <RepoSettingAccordion
+          key={`${entry.account.provider.host}:${org.id}`}
+          account={entry.account}
+          client={entry.client}
+          org={org}
+          type="org"
+        />
       )),
-    [orgs]
+    [entry.account, entry.client, orgs]
+  );
+
+  return (
+    <>
+      <Typography variant="h6" sx={{ mx: 3, mt: 2 }}>
+        {entry.account.provider.host}
+      </Typography>
+      <RepoSettingAccordion
+        account={entry.account}
+        client={entry.client}
+        type="user"
+      />
+      <RepoSettingAccordion
+        account={entry.account}
+        client={entry.client}
+        type="starred"
+      />
+      {orgList}
+    </>
+  );
+};
+
+export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
+  opened,
+  onClose,
+}) => {
+  const { clients } = React.useContext(ConfigContext);
+
+  const [showRawSettings, setShowRawSettings] = React.useState(false);
+
+  const accountLists = React.useMemo(
+    () =>
+      clients.map((entry) => (
+        <AccountRepositorySettings
+          key={entry.account.provider.host}
+          entry={entry}
+        />
+      )),
+    [clients]
   );
 
   const handleClose = React.useCallback(() => {
@@ -57,9 +98,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
         <List
           sx={{ mr: 2, gap: 2, display: showRawSettings ? "none" : "block" }}
         >
-          <RepoSettingAccordion type="user" />
-          <RepoSettingAccordion type="starred" />
-          {orgList}
+          {accountLists}
         </List>
       </Box>
     </Drawer>

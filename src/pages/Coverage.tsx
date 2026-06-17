@@ -19,6 +19,7 @@ import lz from "lz-string";
 import { CoverageResponse } from "../models/CoverageResponse";
 import { CoverageRow } from "../components/CoverageRow";
 import { SummaryRow } from "../components/SummaryRow";
+import { parseRepositoryKey } from "../utils/repositoryKeys";
 
 export const Coverage: React.FC = () => {
   const { data, isLoading, isError } = useQuery({
@@ -42,12 +43,21 @@ export const Coverage: React.FC = () => {
     [data]
   );
 
-  const { repositorySettings, user, octokit } = React.useContext(ConfigContext);
+  const { repositorySettings, accounts } = React.useContext(ConfigContext);
+  const selectedCoverageRepositories = React.useMemo(
+    () =>
+      new Set(
+        Object.keys(repositorySettings)
+          .filter((key) => repositorySettings[key])
+          .map((key) => parseRepositoryKey(key).fullName)
+      ),
+    [repositorySettings]
+  );
 
   const tableRows = React.useMemo(() => {
     if (!data) return [];
     const rows = Object.keys(data)
-      .filter((key) => repositorySettings[key])
+      .filter((key) => selectedCoverageRepositories.has(key))
       .map((key) => {
         const { current, previous, diff, changed } = data[key];
 
@@ -63,9 +73,9 @@ export const Coverage: React.FC = () => {
     rows.push(<SummaryRow key="Summary" data={Object.values(data)} />);
 
     return rows;
-  }, [data, repositorySettings]);
+  }, [data, selectedCoverageRepositories]);
 
-  if (!user || !octokit) {
+  if (accounts.length === 0) {
     return <LandingPage />;
   }
 

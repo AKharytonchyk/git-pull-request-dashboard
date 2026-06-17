@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { ConfigContext } from "../context/ConfigContext";
 import { PullRequest } from "../models/PullRequest";
 import PullRequestCard from "../components/Cards/PullRequestCard";
@@ -23,34 +23,28 @@ import PRLoadingPage from "./PRLoadingPage";
 import { PullRequestFilters } from "../components/Dashboard/PullRequestFilters";
 import { FilterList } from "@mui/icons-material";
 import SortIconOutlined from "@mui/icons-material/Sort";
+import { useActiveRepositories } from "../hooks/useActiveRepositories";
 
 export const Dashboard: React.FC = () => {
-  const { octokit, repositorySettings, user } = React.useContext(ConfigContext);
-  const [activeRepositories, setActiveRepositories] = React.useState<string[]>(
-    []
-  );
+  const { clients, repositorySettings, accounts } = React.useContext(ConfigContext);
+  const activeRepositories = useActiveRepositories(repositorySettings, clients);
   const [orderByDate, setOrderByDate] = React.useState<"Repository" | "Date">(
     "Repository"
   );
   const [order, setOrder] = React.useState<"asc" | "desc">("asc");
 
-  useEffect(() => {
-    setActiveRepositories(
-      Object.keys(repositorySettings)
-        .filter((key) => repositorySettings[key])
-        .sort()
-    );
-  }, [repositorySettings]);
-
   const { data, pending } = useQueries({
-    queries: activeRepositories.map((repo) => ({
-      queryKey: ["pulls", repo],
+    queries: activeRepositories.map((repository) => ({
+      queryKey: ["pulls", repository.providerHost, repository.fullName],
       queryFn: async () => {
-        if (octokit) {
-          return octokit.getPullRequests(repo);
-        }
+        const pulls = await repository.client.getPullRequests(repository.fullName);
+        return pulls.map((pull) => ({
+          ...pull,
+          providerHost: repository.providerHost,
+          repositoryKey: repository.key,
+        }));
       },
-      enabled: octokit !== undefined,
+      enabled: clients.length > 0,
     })),
     combine: (results) => {
       return {
@@ -96,7 +90,7 @@ export const Dashboard: React.FC = () => {
   );
 
   // If no user or octokit is available, show the login page within this route
-  if (!user || !octokit) {
+  if (accounts.length === 0 || clients.length === 0) {
     return <LandingPage />;
   }
 
@@ -181,7 +175,10 @@ export const Dashboard: React.FC = () => {
             {displayedPulls.map(
               (pull) =>
                 pull && (
-                  <Grid key={pull.id} size={{ xl: 6, xs: 12 }}>
+                  <Grid
+                    key={`${pull.providerHost ?? "github.com"}:${pull.id}`}
+                    size={{ xl: 6, xs: 12 }}
+                  >
                     <PullRequestCard pr={pull as unknown as PullRequest} />
                   </Grid>
                 )

@@ -34,8 +34,16 @@ export class TokenManager {
         token: this.encodeToken(token),
         expiresAt: expiryTime,
       };
-      
-      sessionStorage.setItem(this.SESSION_KEY, JSON.stringify(storedSession));
+
+      const existingSessions = this.getStoredSessions();
+      const nextSessions = [
+        ...existingSessions.filter(
+          (existing) => existing.provider.host !== session.provider.host
+        ),
+        storedSession,
+      ];
+
+      sessionStorage.setItem(this.SESSION_KEY, JSON.stringify(nextSessions));
       sessionStorage.setItem(this.TOKEN_KEY, storedSession.token);
       sessionStorage.setItem(this.EXPIRY_KEY, expiryTime.toString());
       sessionStorage.setItem(this.USER_KEY, JSON.stringify(session.user));
@@ -82,36 +90,56 @@ export class TokenManager {
   }
 
   static getSession(): AuthSession | null {
+    return this.getSessions()[0] ?? null;
+  }
+
+  private static getStoredSessions(): Array<AuthSession & {
+    expiresAt?: number;
+    token?: string;
+  }> {
+    const storedSession = sessionStorage.getItem(this.SESSION_KEY);
+    if (!storedSession) {
+      return [];
+    }
+
+    const parsed = JSON.parse(storedSession) as
+      | Array<AuthSession & { expiresAt?: number; token?: string }>
+      | (AuthSession & { expiresAt?: number; token?: string });
+
+    return Array.isArray(parsed) ? parsed : [parsed];
+  }
+
+  static getSessions(): AuthSession[] {
     try {
-      const storedSession = sessionStorage.getItem(this.SESSION_KEY);
-      if (!storedSession) {
-        return null;
+      const sessions = this.getStoredSessions();
+      const validSessions = sessions.filter(
+        (session) => session.expiresAt && Date.now() <= session.expiresAt
+      );
+
+      if (validSessions.length !== sessions.length) {
+        if (validSessions.length === 0) {
+          this.clearToken();
+        } else {
+          sessionStorage.setItem(this.SESSION_KEY, JSON.stringify(validSessions));
+        }
       }
 
-      const parsed = JSON.parse(storedSession) as AuthSession & {
-        expiresAt?: number;
-        token?: string;
-      };
-
-      if (!parsed.expiresAt || Date.now() > parsed.expiresAt) {
-        this.clearToken();
-        return null;
+      if (validSessions.length === 0) {
+        return [];
       }
 
-      if (parsed.method !== "pat" || !parsed.token) {
-        return null;
-      }
-
-      return {
-        method: "pat",
-        token: this.decodeToken(parsed.token),
-        provider: parsed.provider,
-        user: parsed.user,
-      };
+      return validSessions
+        .filter((session) => session.method === "pat" && !!session.token)
+        .map((session) => ({
+          method: "pat",
+          token: this.decodeToken(session.token!),
+          provider: session.provider,
+          user: session.user,
+        }));
     } catch (error) {
-      console.error('Failed to retrieve auth session:', error);
+      console.error('Failed to retrieve auth sessions:', error);
       this.clearToken();
-      return null;
+      return [];
     }
   }
 

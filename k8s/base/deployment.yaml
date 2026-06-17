@@ -45,6 +45,8 @@ spec:
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
         seccompProfile:
           type: RuntimeDefault
       # ghcr.io/magmamoose/* pull creds — the `automation` ns carries the

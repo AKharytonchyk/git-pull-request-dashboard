@@ -38,7 +38,8 @@ export const ExportSettings: React.FC<ExportSettingsProps> = ({ isOpen }) => {
     setInputSettings(JSON.stringify(repositorySettings, null, 2));
   }, [isOpen, repositorySettings]);
 
-  const regexKey = /^[A-Za-z0-9-]+\/[A-Za-z0-9.\-_]+$/;
+  const regexKey =
+    /^([A-Za-z0-9.\-_]+:)?[A-Za-z0-9-]+\/[A-Za-z0-9.\-_]+$/;
 
   const validateJson = (input: string) => {
     try {

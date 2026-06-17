@@ -18,47 +18,61 @@ import { Link as RouterLink } from "react-router";
 import { AsyncChip } from "../AsyncChip";
 import { useOnScreen } from "../../hooks/useOnScreen";
 import VulnerabilityIndicator from "../VulnerabilityIndicator";
+import {
+  parseRepositoryKey,
+  repositoryRoute,
+} from "../../utils/repositoryKeys";
 
 export type RepositoryCardProps = {
   name: string;
 };
 
 export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
-  const { octokit } = React.useContext(ConfigContext);
+  const { clients, getClientForProvider } = React.useContext(ConfigContext);
+  const repository = useMemo(
+    () => parseRepositoryKey(name, clients[0]?.account.provider.host),
+    [clients, name]
+  );
+  const octokit = getClientForProvider(repository.providerHost);
   const ref = React.useRef<HTMLDivElement>(null);
   const isOnScreen = useOnScreen(ref);
   const [isVulnerabilityExpanded, setIsVulnerabilityExpanded] = useState(false);
 
   const enabled = useMemo(
-    () => isOnScreen && octokit !== undefined && name !== undefined,
-    [isOnScreen, octokit, name]
+    () => isOnScreen && !!octokit && repository.fullName !== undefined,
+    [isOnScreen, octokit, repository.fullName]
   );
 
   const { data: issues, isLoading: loadingIssues } = useQuery({
-    queryKey: ["issues", name],
+    queryKey: ["issues", repository.providerHost, repository.fullName],
     queryFn: async () => {
       if (octokit) {
-        return octokit.getIssues(name);
+        return octokit.getIssues(repository.fullName);
       }
     },
     enabled: enabled,
   });
 
   const { data: pulls, isLoading: loadingPulls } = useQuery({
-    queryKey: ["pulls", name],
+    queryKey: ["pulls", repository.providerHost, repository.fullName],
     queryFn: async () => {
       if (octokit) {
-        return octokit.getPullRequests(name);
+        const pulls = await octokit.getPullRequests(repository.fullName);
+        return pulls.map((pull) => ({
+          ...pull,
+          providerHost: repository.providerHost,
+          repositoryKey: repository.key,
+        }));
       }
     },
     enabled: enabled,
   });
 
   const { data: repoData } = useQuery({
-    queryKey: ["repo", name],
+    queryKey: ["repo", repository.providerHost, repository.fullName],
     queryFn: async () => {
       if (octokit) {
-        return octokit.getRepository(name);
+        return octokit.getRepository(repository.fullName);
       }
     },
     enabled: enabled,
@@ -118,12 +132,16 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
           }}
         >
           <LanguageIcon language={repoData?.language} />
-          <Typography variant="h6">{name}</Typography>
+          <Typography variant="h6">{repository.fullName}</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {repository.providerHost}
+          </Typography>
 
           <Box sx={{ marginLeft: "auto" }}>
             {repoData ? (
               <VulnerabilityIndicator
                 repositoryFullName={repoData.full_name}
+                providerHost={repository.providerHost}
                 compact={true}
                 expanded={false}
                 onToggleExpanded={() =>
@@ -139,6 +157,7 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
         {isVulnerabilityExpanded && repoData && (
           <VulnerabilityIndicator
             repositoryFullName={repoData.full_name}
+            providerHost={repository.providerHost}
             compact={false}
             expanded={true}
           />
@@ -241,7 +260,7 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({ name }) => {
               </Tooltip>
             </Link>
             <RouterLink
-              to={`/repositories/${repo?.full_name}`}
+              to={repositoryRoute(repository.providerHost, repository.fullName)}
               style={{ height: 24, width: 24 }}
             >
               <Tooltip title="View Details">

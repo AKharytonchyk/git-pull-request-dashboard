@@ -66,6 +66,7 @@ export function providerFromHost(input?: string): AuthProvider {
   };
 }
 
-export function oauthProxyApiUrl(): string {
-  return `${window.location.origin}/api/github`;
+export function oauthProxyApiUrl(providerHost?: string): string {
+  const hostPath = providerHost ? `/${encodeURIComponent(providerHost)}` : "";
+  return `${window.location.origin}/api/github${hostPath}`;
 }

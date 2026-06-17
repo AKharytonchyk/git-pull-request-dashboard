@@ -1,5 +1,23 @@
-import { Biotech, Dashboard, Settings } from "@mui/icons-material";
-import { Box, Avatar, Chip, Button, Tooltip } from "@mui/material";
+import {
+  AddCircle,
+  Biotech,
+  Business,
+  Dashboard,
+  GitHub,
+  Login,
+  Settings,
+} from "@mui/icons-material";
+import {
+  Box,
+  Avatar,
+  Chip,
+  Button,
+  Tooltip,
+  IconButton,
+  Menu,
+  MenuItem,
+  TextField,
+} from "@mui/material";
 import BottomNavigation from "@mui/material/BottomNavigation";
 import BottomNavigationAction from "@mui/material/BottomNavigationAction";
 import React from "react";
@@ -8,34 +26,48 @@ import { PullRequestIcon } from "./icons/PullRequestIcon";
 import { RepositoryIcon } from "./icons/RepositoryIcon";
 import { IssuesIcon } from "./icons/IssuesIcon";
 import { ThemeSwitch } from "./ThemeSwitch";
-import { AuthenticatedUser, AuthProvider } from "../models/Auth";
+import { AuthSession } from "../models/Auth";
+import { APP_VERSION } from "../version";
 
 export type AuthHeaderProps = {
-  user: AuthenticatedUser;
-  provider?: AuthProvider;
+  sessions: AuthSession[];
   logOut: () => void;
   setOpenSettings: (value: boolean) => void;
   onThemeSwitch: () => void;
   darkMode: boolean;
+  onOAuthLogin: (providerHost?: string) => void;
 };
 
 export const AuthHeader: React.FC<AuthHeaderProps> = ({
-  user,
-  provider,
+  sessions,
   logOut,
   setOpenSettings,
   onThemeSwitch,
   darkMode,
+  onOAuthLogin,
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
   const [checked, setChecked] = React.useState(darkMode);
+  const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement | null>(null);
+  const [enterpriseHost, setEnterpriseHost] = React.useState("");
 
   const handleThemeSwitch = () => {
     setChecked(!checked);
     onThemeSwitch();
   };
+
+  const closeMenu = () => setMenuAnchor(null);
+
+  const handleOAuthLogin = (providerHost: string) => {
+    closeMenu();
+    onOAuthLogin(providerHost);
+  };
+
+  const hasGithubSession = sessions.some(
+    (session) => session.provider.host === "github.com"
+  );
 
   return (
     <Box
@@ -93,19 +125,79 @@ export const AuthHeader: React.FC<AuthHeaderProps> = ({
         }}
       >
         <ThemeSwitch checked={checked} onChange={handleThemeSwitch} />
-        <Avatar alt={user?.login} src={user?.avatar_url} sx={{ mr: 2 }} />
-        <Chip
-          label={user?.login}
-          onClick={() => window.open(user?.html_url ?? user?.url, "_blank")}
-        />
-        {provider?.host && (
+        <Chip label={APP_VERSION} size="small" variant="outlined" />
+        {sessions.map((session) => (
           <Chip
-            label={provider.host}
+            key={session.provider.host}
+            avatar={
+              <Avatar
+                alt={session.user.login}
+                src={session.user.avatar_url}
+              />
+            }
+            label={`${session.user.login} @ ${session.provider.host}`}
             variant="outlined"
             size="small"
-            onClick={() => window.open(provider.webUrl, "_blank")}
+            onClick={() =>
+              window.open(
+                session.user.html_url ?? session.user.url,
+                "_blank"
+              )
+            }
           />
-        )}
+        ))}
+        <Tooltip title="Add account">
+          <IconButton
+            color="inherit"
+            size="small"
+            onClick={(event) => setMenuAnchor(event.currentTarget)}
+          >
+            <AddCircle />
+          </IconButton>
+        </Tooltip>
+        <Menu anchorEl={menuAnchor} open={!!menuAnchor} onClose={closeMenu}>
+          <MenuItem
+            disabled={hasGithubSession}
+            onClick={() => handleOAuthLogin("github.com")}
+          >
+            <GitHub fontSize="small" />
+            <Box component="span" sx={{ ml: 1 }}>
+              GitHub.com
+            </Box>
+          </MenuItem>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1,
+              alignItems: "center",
+              px: 2,
+              py: 1,
+              width: 320,
+            }}
+          >
+            <Business fontSize="small" />
+            <TextField
+              size="small"
+              variant="standard"
+              label="Enterprise host"
+              placeholder="your-tenant.ghe.com"
+              value={enterpriseHost}
+              onChange={(event) => setEnterpriseHost(event.target.value)}
+              sx={{ flex: 1 }}
+            />
+            <Tooltip title="Log in">
+              <span>
+                <IconButton
+                  size="small"
+                  disabled={!enterpriseHost.trim()}
+                  onClick={() => handleOAuthLogin(enterpriseHost)}
+                >
+                  <Login fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
+        </Menu>
         <Button
           variant="text"
           color="inherit"

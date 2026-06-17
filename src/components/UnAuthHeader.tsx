@@ -2,6 +2,7 @@ import { Business, GitHub, Key, Login } from "@mui/icons-material";
 import {
   Box,
   Button,
+  Chip,
   IconButton,
   TextField,
   ToggleButton,
@@ -9,6 +10,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import React from "react";
+import { APP_VERSION } from "../version";
 
 export type UnAuthHeaderProps = {
   loading?: boolean;
@@ -40,6 +42,7 @@ export const UnAuthHeader: React.FC<UnAuthHeaderProps> = ({
         flexWrap: "wrap",
       }}
     >
+      <Chip label={APP_VERSION} size="small" variant="outlined" />
       <ToggleButtonGroup
         exclusive
         size="small"

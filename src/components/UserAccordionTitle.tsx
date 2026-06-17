@@ -1,28 +1,14 @@
 import React from "react";
-import { User } from "../models/User";
-import { ConfigContext } from "../context/ConfigContext";
 import { Box, Avatar } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
+import { AuthSession } from "../models/Auth";
 
-export const UserTitle: React.FC = () => {
-  const { octokit } = React.useContext(ConfigContext);
+export const UserTitle: React.FC<{ account: AuthSession }> = ({ account }) => {
+  const { user, provider } = account;
 
-  const { data: user } = useQuery({
-    queryKey: ["user"],
-    queryFn: async () => {
-      if (!octokit) return;
-      const response = await octokit.testAuthentication();
-      return response.data as User;
-    },
-    enabled: !!octokit,
-  });
-
-  return user ? (
+  return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
       <Avatar alt={user?.login} src={user?.avatar_url} sx={{ mr: 2 }} />
-      <div>{user?.login}</div>
+      <div>{user?.login} @ {provider.host}</div>
     </Box>
-  ) : (
-    <></>
   );
 };

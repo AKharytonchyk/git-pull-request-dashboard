@@ -46,6 +46,9 @@ const PullRequestCard: React.FC<PullRequestCardProps> = ({ pr }) => {
           size="small"
           sx={{ marginRight: "auto" }}
         />
+        {pr.providerHost && (
+          <Chip label={pr.providerHost} size="small" variant="outlined" />
+        )}
         {pr.locked && <Lock />}
         {pr.draft && (
           <Tooltip title="Draft PR">
@@ -124,18 +127,21 @@ const PullRequestCard: React.FC<PullRequestCardProps> = ({ pr }) => {
             owner={pr.base.repo.owner.login}
             repo={pr.base.repo.name}
             prNumber={pr.number}
+            providerHost={pr.providerHost}
           />
           {"|"}
           <PullRequestMergeCheck
             owner={pr.base.repo.owner.login}
             repo={pr.base.repo.name}
             prNumber={pr.number}
+            providerHost={pr.providerHost}
           />
           {"|"}
           <PullRequestsApprovals
             owner={pr.base.repo.owner.login}
             repo={pr.base.repo.name}
             prNumber={pr.number}
+            providerHost={pr.providerHost}
           />
           <Box gap={2} display={"flex"}>
             <Link href={pr.html_url} target="_blank" rel="noopener">

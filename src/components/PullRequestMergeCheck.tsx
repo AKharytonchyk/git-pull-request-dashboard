@@ -9,22 +9,25 @@ export type PullRequestMergeCheckProps = {
   owner: string;
   repo: string;
   prNumber: number;
+  providerHost?: string;
 };
 
 export const PullRequestMergeCheck: React.FC<PullRequestMergeCheckProps> = ({
   owner,
   repo,
   prNumber,
+  providerHost,
 }) => {
   const elementRef = React.useRef<HTMLDivElement>(null);
   const isIntersecting = useOnScreen(elementRef, "100px", true);
-  const { octokit } = React.useContext(ConfigContext);
+  const { getClientForProvider } = React.useContext(ConfigContext);
+  const octokit = getClientForProvider(providerHost);
 
   const {
     isLoading,
     data: canBeMerged = { mergeable: false, mergeableState: "" },
   } = useQuery({
-    queryKey: ["hasMergeConflict", owner, repo, prNumber],
+    queryKey: ["hasMergeConflict", providerHost, owner, repo, prNumber],
     queryFn: async () => {
       if (!octokit || !isIntersecting) return;
       const pr = await octokit.hasMergeConflict(owner, repo, prNumber);

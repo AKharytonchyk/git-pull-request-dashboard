@@ -32,8 +32,7 @@ import {
 const patLoginEnabled = import.meta.env.VITE_ENABLE_PAT_LOGIN !== "false";
 
 function App() {
-  const [authSession, setAuthSession] = React.useState<AuthSession>();
-  const [octokit, setOctokit] = React.useState<GitService | null>(null);
+  const [authSessions, setAuthSessions] = React.useState<AuthSession[]>([]);
   const [openSettings, setOpenSettings] = React.useState<boolean>(false);
   const [authLoading, setAuthLoading] = React.useState<boolean>(true);
   
@@ -62,19 +61,66 @@ function App() {
   });
 
   const navigate = useNavigate();
-  const user = authSession?.user;
+  const clients = React.useMemo(
+    () =>
+      authSessions.map((session) => ({
+        account: session,
+        client: new GitService(
+          session.method === "oauth"
+            ? oauthProxyApiUrl(session.provider.host)
+            : session.provider.apiUrl,
+          session.method === "pat" ? session.token : undefined,
+          session.provider.webUrl
+        ),
+      })),
+    [authSessions]
+  );
+  const octokit = clients[0]?.client ?? null;
+  const user = authSessions[0]?.user;
+  const provider = authSessions[0]?.provider;
 
   const showToast = React.useCallback((message: string, severity: 'error' | 'warning' | 'info' | 'success' = 'info') => {
     setToast({ open: true, message, severity });
   }, []);
 
-  const setAuthenticatedSession = React.useCallback((
-    session: AuthSession,
-    apiUrl = session.provider.apiUrl
-  ) => {
-    setAuthSession(session);
-    setOctokit(new GitService(apiUrl, session.token, session.provider.webUrl));
+  const setAuthenticatedSessions = React.useCallback((sessions: AuthSession[]) => {
+    const sessionsByHost = new Map<string, AuthSession>();
+    sessions.forEach((session) => {
+      sessionsByHost.set(session.provider.host, session);
+    });
+    setAuthSessions(
+      Array.from(sessionsByHost.values()).sort((a, b) => {
+        if (a.provider.host === "github.com") return -1;
+        if (b.provider.host === "github.com") return 1;
+        return a.provider.host.localeCompare(b.provider.host);
+      })
+    );
   }, []);
+
+  const upsertAuthenticatedSession = React.useCallback((session: AuthSession) => {
+    setAuthSessions((previous) => {
+      const sessionsByHost = new Map(
+        previous.map((existing) => [existing.provider.host, existing])
+      );
+      sessionsByHost.set(session.provider.host, session);
+      return Array.from(sessionsByHost.values()).sort((a, b) => {
+        if (a.provider.host === "github.com") return -1;
+        if (b.provider.host === "github.com") return 1;
+        return a.provider.host.localeCompare(b.provider.host);
+      });
+    });
+  }, []);
+
+  const getClientForProvider = React.useCallback(
+    (providerHost?: string) => {
+      if (!providerHost) return octokit;
+      return (
+        clients.find((entry) => entry.account.provider.host === providerHost)
+          ?.client ?? null
+      );
+    },
+    [clients, octokit]
+  );
 
   const onPatLogin = React.useCallback((token: string, providerHost?: string) => {
     if (!token) {
@@ -94,7 +140,6 @@ function App() {
       octoKit.testAuthentication().then((user) => {
         if (user.status !== 200) {
           showToast("Invalid token. Please check your GitHub token.", "error");
-          setAuthSession(undefined);
           return;
         }
 
@@ -105,15 +150,15 @@ function App() {
           user: user.data as AuthenticatedUser,
         };
 
-        setAuthenticatedSession(session);
+        upsertAuthenticatedSession(session);
         TokenManager.setSession(session);
         navigate("/");
-        showToast("Successfully logged in!", "success");
+        showToast(`Successfully logged in to ${provider.host}!`, "success");
       }).catch((error) => {
         console.error("Authentication failed:", error);
         showToast("Authentication failed. Please try again.", "error");
       });
-  }, [navigate, setAuthenticatedSession, showToast]);
+  }, [navigate, showToast, upsertAuthenticatedSession]);
 
   const onOAuthLogin = React.useCallback((providerHost?: string) => {
     const provider = providerFromHost(providerHost || "github.com");
@@ -133,13 +178,25 @@ function App() {
 
         if (response.ok) {
           const data = await response.json() as OAuthSessionResponse;
-          if (data.authenticated && data.user && data.provider) {
+          if (data.authenticated) {
+            const sessions =
+              data.sessions?.map((session) => ({
+                method: "oauth" as const,
+                provider: session.provider,
+                user: session.user,
+              })) ??
+              (data.user && data.provider
+                ? [
+                    {
+                      method: "oauth" as const,
+                      provider: data.provider,
+                      user: data.user,
+                    },
+                  ]
+                : []);
+
             if (!cancelled) {
-              setAuthenticatedSession({
-                method: "oauth",
-                provider: data.provider,
-                user: data.user,
-              }, oauthProxyApiUrl());
+              setAuthenticatedSessions(sessions);
               TokenManager.clearToken();
               setAuthLoading(false);
             }
@@ -150,9 +207,9 @@ function App() {
         // Static/dev deployments may not have the OAuth server enabled.
       }
 
-      const storedSession = TokenManager.getSession();
-      if (!cancelled && storedSession) {
-        setAuthenticatedSession(storedSession);
+      const storedSessions = TokenManager.getSessions();
+      if (!cancelled && storedSessions.length > 0) {
+        setAuthenticatedSessions(storedSessions);
       }
 
       if (!cancelled) {
@@ -165,10 +222,10 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [setAuthenticatedSession]);
+  }, [setAuthenticatedSessions]);
 
   const logOut = React.useCallback(() => {
-    if (authSession?.method === "oauth") {
+    if (authSessions.some((session) => session.method === "oauth")) {
       fetch("/api/auth/logout", {
         method: "POST",
         credentials: "include",
@@ -178,11 +235,10 @@ function App() {
     }
 
     TokenManager.clearToken();
-    setAuthSession(undefined);
-    setOctokit(null);
+    setAuthSessions([]);
     navigate("/login");
     showToast("Logged out successfully", "info");
-  }, [authSession?.method, navigate, showToast]);
+  }, [authSessions, navigate, showToast]);
 
   const switchDarkMode = React.useCallback(() => {
     setIsDarkMode((prev) => !prev);
@@ -210,11 +266,14 @@ function App() {
         <ConfigContext.Provider
           value={{
             octokit,
+            clients,
+            accounts: authSessions,
             repositorySettings,
             handleRepositorySelect,
             saveRawSettings,
+            getClientForProvider,
             user,
-            provider: authSession?.provider,
+            provider,
           }}
         >
           <AppBar
@@ -223,7 +282,7 @@ function App() {
             sx={{ position: "fixed", zIndex: 100 }}
           >
             <Toolbar sx={{ justifyContent: "flex-end" }}>
-              {!user?.login ? (
+              {authSessions.length === 0 ? (
                 <UnAuthHeader
                   loading={authLoading}
                   onOAuthLogin={onOAuthLogin}
@@ -231,12 +290,12 @@ function App() {
                 />
               ) : (
                 <AuthHeader
-                  user={user}
-                  provider={authSession?.provider}
+                  sessions={authSessions}
                   logOut={logOut}
                   setOpenSettings={setOpenSettings}
                   onThemeSwitch={switchDarkMode}
                   darkMode={isDarkMode}
+                  onOAuthLogin={onOAuthLogin}
                 />
               )}
             </Toolbar>
@@ -260,7 +319,7 @@ function App() {
               <Outlet />
             </Box>
           </Box>
-          {octokit && (
+          {clients.length > 0 && (
             <SettingsDrawer
               opened={openSettings}
               onClose={() => setOpenSettings(false)}

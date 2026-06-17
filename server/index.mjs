@@ -173,6 +173,54 @@ function unsealSession(value) {
   return session;
 }
 
+function hostForSession(session) {
+  return session?.provider?.host;
+}
+
+function pruneSessionStore(store) {
+  const sessions = Object.fromEntries(
+    Object.entries(store.sessions ?? {}).filter(
+      ([, session]) => session?.expiresAt && Date.now() <= session.expiresAt
+    )
+  );
+
+  return { version: 2, sessions };
+}
+
+function toSessionStore(sessionOrStore) {
+  if (sessionOrStore?.version === 2 && sessionOrStore.sessions) {
+    return pruneSessionStore(sessionOrStore);
+  }
+
+  const host = hostForSession(sessionOrStore);
+  if (!host || !sessionOrStore?.expiresAt || Date.now() > sessionOrStore.expiresAt) {
+    return { version: 2, sessions: {} };
+  }
+
+  return {
+    version: 2,
+    sessions: {
+      [host]: sessionOrStore,
+    },
+  };
+}
+
+function sessionStoreFromRequest(req) {
+  const cookies = parseCookies(req.headers.cookie);
+  const sessionCookie = cookies[SESSION_COOKIE];
+  return sessionCookie
+    ? toSessionStore(unsealSession(sessionCookie))
+    : { version: 2, sessions: {} };
+}
+
+function sessionsFromStore(store) {
+  return Object.values(pruneSessionStore(store).sessions).sort((a, b) => {
+    if (a.provider.host === "github.com") return -1;
+    if (b.provider.host === "github.com") return 1;
+    return a.provider.host.localeCompare(b.provider.host);
+  });
+}
+
 function trimTrailingSlash(value) {
   return value.replace(/\/+$/, "");
 }
@@ -313,12 +361,6 @@ function redirect(res, location, headers = {}) {
   res.end();
 }
 
-function sessionFromRequest(req) {
-  const cookies = parseCookies(req.headers.cookie);
-  const sessionCookie = cookies[SESSION_COOKIE];
-  return sessionCookie ? unsealSession(sessionCookie) : null;
-}
-
 async function readRequestBody(req) {
   const chunks = [];
   for await (const chunk of req) {
@@ -343,6 +385,15 @@ async function fetchAuthenticatedUser(provider, accessToken) {
   }
 
   return response.json();
+}
+
+function publicUser(user) {
+  return {
+    login: user.login,
+    avatar_url: user.avatar_url,
+    url: user.url,
+    html_url: user.html_url,
+  };
 }
 
 async function handleOAuthStart(req, res, url) {
@@ -447,12 +498,20 @@ async function handleOAuthCallback(req, res, url) {
     provider: publicProvider,
     scope: tokenPayload.scope,
     tokenType: tokenPayload.token_type ?? "bearer",
-    user,
+    user: publicUser(user),
   };
+  const existingStore = sessionStoreFromRequest(req);
+  const sessionStore = pruneSessionStore({
+    version: 2,
+    sessions: {
+      ...existingStore.sessions,
+      [provider.host]: session,
+    },
+  });
 
   redirect(res, decodedState.redirectTo || "/#/", {
     "Set-Cookie": [
-      serializeCookie(SESSION_COOKIE, sealSession(session), req, {
+      serializeCookie(SESSION_COOKIE, sealSession(sessionStore), req, {
         maxAge: SESSION_MAX_AGE_SECONDS,
       }),
       clearCookie(STATE_COOKIE, req),
@@ -462,16 +521,25 @@ async function handleOAuthCallback(req, res, url) {
 
 function handleSession(req, res) {
   try {
-    const session = sessionFromRequest(req);
-    if (!session) {
+    const store = sessionStoreFromRequest(req);
+    const sessions = sessionsFromStore(store);
+    const publicSessions = sessions.map((session) => ({
+      provider: session.provider,
+      user: session.user,
+      scope: session.scope,
+      tokenType: session.tokenType,
+    }));
+
+    if (publicSessions.length === 0) {
       sendJson(res, 200, { authenticated: false });
       return;
     }
 
     sendJson(res, 200, {
       authenticated: true,
-      provider: session.provider,
-      user: session.user,
+      provider: publicSessions[0].provider,
+      user: publicSessions[0].user,
+      sessions: publicSessions,
     });
   } catch {
     sendJson(res, 200, { authenticated: false }, {
@@ -487,9 +555,9 @@ function handleLogout(req, res) {
 }
 
 async function handleGitHubProxy(req, res, url) {
-  let session;
+  let sessions;
   try {
-    session = sessionFromRequest(req);
+    sessions = sessionsFromStore(sessionStoreFromRequest(req));
   } catch {
     sendJson(res, 401, { error: "invalid_session" }, {
       "Set-Cookie": clearCookie(SESSION_COOKIE, req),
@@ -497,12 +565,21 @@ async function handleGitHubProxy(req, res, url) {
     return;
   }
 
-  if (!session?.accessToken) {
+  if (sessions.length === 0) {
     sendJson(res, 401, { error: "not_authenticated" });
     return;
   }
 
-  const upstreamPath = url.pathname.replace(/^\/api\/github\/?/, "/") || "/";
+  const proxyPath = url.pathname.replace(/^\/api\/github\/?/, "/") || "/";
+  const pathSegments = proxyPath.replace(/^\/+/, "").split("/");
+  const requestedHost = decodeURIComponent(pathSegments[0] ?? "");
+  const matchingSession = sessions.find(
+    (candidate) => candidate.provider.host === requestedHost
+  );
+  const session = matchingSession ?? sessions[0];
+  const upstreamPath = matchingSession
+    ? `/${pathSegments.slice(1).join("/")}`
+    : proxyPath;
   const upstreamUrl = `${joinUrl(session.provider.apiUrl, upstreamPath)}${url.search}`;
   const headers = new Headers();
 
